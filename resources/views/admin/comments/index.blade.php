@@ -1,300 +1,294 @@
 @extends('layouts.admin')
 
-@section('title', 'Manage Comments')
+@section('title', 'Comments Management')
 
 @section('content')
-<div class="flex-1 overflow-auto">
+<div class="admin-page space-y-8">
     <!-- Header -->
-    <div class="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-10">
-        <div class="px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-white">Manage Comments</h1>
-                    <p class="text-blue-200 mt-1">Moderate photo comments and feedback</p>
+    <div class="admin-header">
+        <div class="px-6 py-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div class="space-y-2">
+                    <h1 class="text-2xl lg:text-3xl font-bold">Comments Management</h1>
+                    <p class="text-gray-600 text-sm lg:text-base">Moderate and manage photo comments</p>
                 </div>
-                <button onclick="autoModerate()" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105">
-                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                    </svg>
-                    Auto Moderate
-                </button>
+                <div class="flex space-x-3">
+                    <button onclick="autoModerate()" class="inline-flex items-center px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg" style="background: #FF6F61; color: white;">
+                        <i class="fas fa-robot mr-2"></i>
+                        Auto Moderate
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="p-6">
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-blue-100 text-sm">Total</p>
-                        <p class="text-2xl font-bold">{{ $stats['total'] }}</p>
+    <!-- Stats Card -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-lg mb-3">Monitor and moderate user interactions on your photos</p>
+                <div class="flex items-center space-x-8 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 rounded-full mr-2" style="background: #FEEA77;"></div>
+                        <i class="fas fa-comments mr-2" style="color: #FEEA77;"></i>
+                        {{ $stats['total'] ?? 0 }} Comments
                     </div>
-                    <svg class="w-8 h-8 text-blue-200" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                    </svg>
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 rounded-full mr-2" style="background: #FEEA77;"></div>
+                        <i class="fas fa-shield-alt mr-2" style="color: #FEEA77;"></i>
+                        Smart Moderation
+                    </div>
+                </div>
+            </div>
+            <div class="text-5xl" style="color: #FEEA77;">
+                <i class="fas fa-comments"></i>
+            </div>
+        </div>
+    </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            <div class="modern-card hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-orange-50 min-h-[120px]">
+                <div class="modern-card-content p-6">
+                    <div class="flex items-center justify-between h-full">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium mb-2">Total Comments</p>
+                            <p class="text-3xl font-bold text-gray-800">{{ $stats['total'] ?? 0 }}</p>
+                        </div>
+                        <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-comments text-white text-xl"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-yellow-100 text-sm">Pending</p>
-                        <p class="text-2xl font-bold">{{ $stats['pending'] }}</p>
+            <div class="modern-card hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-yellow-50 min-h-[120px]">
+                <div class="modern-card-content p-6">
+                    <div class="flex items-center justify-between h-full">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium mb-2">Pending</p>
+                            <p class="text-3xl font-bold text-gray-800">{{ $stats['pending'] ?? 0 }}</p>
+                        </div>
+                        <div class="w-14 h-14 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-clock text-white text-xl"></i>
+                        </div>
                     </div>
-                    <svg class="w-8 h-8 text-yellow-200" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                    </svg>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-green-100 text-sm">Approved</p>
-                        <p class="text-2xl font-bold">{{ $stats['approved'] }}</p>
+            <div class="modern-card hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-amber-50 min-h-[120px]">
+                <div class="modern-card-content p-6">
+                    <div class="flex items-center justify-between h-full">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium mb-2">Approved</p>
+                            <p class="text-3xl font-bold text-gray-800">{{ $stats['approved'] ?? 0 }}</p>
+                        </div>
+                        <div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-check-circle text-white text-xl"></i>
+                        </div>
                     </div>
-                    <svg class="w-8 h-8 text-green-200" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                    </svg>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-red-100 text-sm">Rejected</p>
-                        <p class="text-2xl font-bold">{{ $stats['rejected'] }}</p>
+            <div class="modern-card hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-red-50 min-h-[120px]">
+                <div class="modern-card-content p-6">
+                    <div class="flex items-center justify-between h-full">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium mb-2">Rejected</p>
+                            <p class="text-3xl font-bold text-gray-800">{{ $stats['rejected'] ?? 0 }}</p>
+                        </div>
+                        <div class="w-14 h-14 bg-gradient-to-br from-red-400 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-times-circle text-white text-xl"></i>
+                        </div>
                     </div>
-                    <svg class="w-8 h-8 text-red-200" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                    </svg>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-100 text-sm">Spam</p>
-                        <p class="text-2xl font-bold">{{ $stats['spam'] }}</p>
+            <div class="modern-card hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-orange-50 min-h-[120px]">
+                <div class="modern-card-content p-6">
+                    <div class="flex items-center justify-between h-full">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium mb-2">Spam</p>
+                            <p class="text-3xl font-bold text-gray-800">{{ $stats['spam'] ?? 0 }}</p>
+                        </div>
+                        <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                        </div>
                     </div>
-                    <svg class="w-8 h-8 text-gray-200" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM4 10a6 6 0 1112 0 6 6 0 01-12 0z" clip-rule="evenodd"/>
-                    </svg>
                 </div>
             </div>
         </div>
 
         <!-- Search and Filters -->
-        <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 mb-6">
-            <form method="GET" action="{{ route('admin.comments.index') }}" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <!-- Search -->
+        <div class="modern-card mb-8 hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-amber-50">
+            <div class="modern-card-header border-b border-amber-100 pb-6">
+                <div class="flex items-center justify-between">
                     <div>
-                        <label class="block text-sm font-medium text-white mb-2">Search</label>
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                               placeholder="Search comments..." 
-                               class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <h3 class="modern-card-title text-xl font-bold flex items-center">
+                            <div class="w-3 h-3 bg-amber-400 rounded-full mr-3"></div>
+                            Search & Filter Comments
+                        </h3>
+                        <p class="text-gray-500 text-sm mt-1">Find and moderate comments efficiently</p>
                     </div>
-
-                    <!-- Status Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">Status</label>
-                        <select name="status" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option value="">All Status</option>
-                            <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
-                            <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                            <option value="spam" {{ request('status') === 'spam' ? 'selected' : '' }}>Spam</option>
-                        </select>
-                    </div>
-
-                    <!-- Photo Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">Photo</label>
-                        <select name="photo" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option value="">All Photos</option>
-                            @foreach($photos as $photo)
-                                <option value="{{ $photo->id }}" {{ request('photo') == $photo->id ? 'selected' : '' }}>
-                                    {{ Str::limit($photo->title, 40) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Sort -->
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">Sort By</label>
-                        <select name="sort" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Latest First</option>
-                            <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Oldest First</option>
-                            <option value="name" {{ request('sort') === 'name' ? 'selected' : '' }}>Name A-Z</option>
-                        </select>
+                    <div class="bg-amber-100 text-amber-600 px-3 py-1 rounded-full text-xs font-medium">
+                        <i class="fas fa-search mr-1"></i>
+                        Smart Filter
                     </div>
                 </div>
-
-                <div class="flex space-x-3">
-                    <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg transition-colors">
-                        Apply Filters
-                    </button>
-                    <a href="{{ route('admin.comments.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
-                        Clear Filters
-                    </a>
-                </div>
-            </form>
-        </div>
-
-        <!-- Bulk Actions -->
-        <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 mb-6" id="bulk-actions" style="display: none;">
-            <form method="POST" action="{{ route('admin.comments.bulk-action') }}" id="bulk-form">
-                @csrf
-                <div class="flex items-center space-x-4">
-                    <span class="text-white font-medium">With selected:</span>
-                    <select name="action" class="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Choose action...</option>
-                        <option value="approve">Approve</option>
-                        <option value="reject">Reject</option>
-                        <option value="spam">Mark as Spam</option>
-                        <option value="delete">Delete</option>
-                    </select>
-                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors">
-                        Apply Action
-                    </button>
-                    <span class="text-blue-200" id="selected-count">0 comments selected</span>
-                </div>
-            </form>
-        </div>
-
-        <!-- Comments List -->
-        @if($comments->count() > 0)
-            <div class="space-y-4">
-                @foreach($comments as $comment)
-                    <div class="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 overflow-hidden">
-                        <div class="p-6">
-                            <div class="flex items-start space-x-4">
-                                <!-- Checkbox -->
-                                <input type="checkbox" name="comment_ids[]" value="{{ $comment->id }}" 
-                                       class="comment-checkbox w-5 h-5 text-purple-600 bg-white/20 border-white/40 rounded focus:ring-purple-500 mt-1">
-
-                                <!-- Comment Content -->
-                                <div class="flex-1 min-w-0">
-                                    <!-- Header -->
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                                                <span class="text-white font-semibold text-sm">{{ substr($comment->name, 0, 1) }}</span>
-                                            </div>
-                                            <div>
-                                                <h4 class="text-white font-semibold">{{ $comment->name }}</h4>
-                                                <p class="text-blue-200 text-sm">{{ $comment->email }}</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Status Badge -->
-                                        <div class="flex items-center space-x-2">
-                                            @if($comment->is_spam)
-                                                <span class="inline-block bg-gray-500 text-white text-xs px-3 py-1 rounded-full">SPAM</span>
-                                            @endif
-                                            
-                                            @switch($comment->status)
-                                                @case('pending')
-                                                    <span class="inline-block bg-yellow-500 text-white text-xs px-3 py-1 rounded-full">PENDING</span>
-                                                    @break
-                                                @case('approved')
-                                                    <span class="inline-block bg-green-500 text-white text-xs px-3 py-1 rounded-full">APPROVED</span>
-                                                    @break
-                                                @case('rejected')
-                                                    <span class="inline-block bg-red-500 text-white text-xs px-3 py-1 rounded-full">REJECTED</span>
-                                                    @break
-                                            @endswitch
-                                        </div>
-                                    </div>
-
-                                    <!-- Comment Text -->
-                                    <div class="bg-white/5 rounded-lg p-4 mb-4">
-                                        <p class="text-white">{{ $comment->comment }}</p>
-                                    </div>
-
-                                    <!-- Photo Info -->
-                                    <div class="flex items-center space-x-3 mb-4">
-                                        <img src="{{ $comment->photo->thumbnail_url }}" alt="{{ $comment->photo->title }}" 
-                                             class="w-12 h-12 rounded-lg object-cover">
-                                        <div>
-                                            <p class="text-white font-medium">{{ $comment->photo->title }}</p>
-                                            <p class="text-blue-200 text-sm">{{ $comment->photo->category->name ?? 'No category' }}</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Meta Info -->
-                                    <div class="flex items-center justify-between text-xs text-gray-400">
-                                        <div class="flex items-center space-x-4">
-                                            <span>{{ $comment->created_at->format('M j, Y H:i') }}</span>
-                                            <span>IP: {{ $comment->ip_address }}</span>
-                                            @if($comment->approved_at)
-                                                <span>Approved {{ $comment->approved_at->diffForHumans() }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Action Buttons -->
-                                <div class="flex flex-col space-y-2">
-                                    @if($comment->status === 'pending')
-                                        <button onclick="approveComment({{ $comment->id }})" 
-                                                class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition-colors">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </button>
-                                        <button onclick="rejectComment({{ $comment->id }})" 
-                                                class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition-colors">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </button>
-                                    @endif
-
-                                    @if(!$comment->is_spam)
-                                        <button onclick="markSpam({{ $comment->id }})" 
-                                                class="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-lg transition-colors">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM4 10a6 6 0 1112 0 6 6 0 01-12 0z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </button>
-                                    @else
-                                        <button onclick="unmarkSpam({{ $comment->id }})" 
-                                                class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-colors">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </button>
-                                    @endif
-
-                                    <button onclick="deleteComment({{ $comment->id }})" 
-                                            class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zM8 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd"/>
-                                        </svg>
-                                    </button>
+            </div>
+            <div class="modern-card-content pt-8">
+                <form method="GET" action="{{ route('admin.comments.index') }}" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Search -->
+                        <div class="group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Search Comments</label>
+                            <div class="relative">
+                                <input type="text" name="search" value="{{ request('search') }}" 
+                                       placeholder="Search by content, name, email..." 
+                                       class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition-all duration-300 group-hover:border-amber-200">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <i class="fas fa-search text-gray-400"></i>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Status Filter -->
+                        <div class="group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                            <select name="status" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent transition-all duration-300 group-hover:border-amber-200">
+                                <option value="">All Status</option>
+                                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                                <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                <option value="spam" {{ request('status') === 'spam' ? 'selected' : '' }}>Spam</option>
+                            </select>
+                        </div>
                     </div>
-                @endforeach
+
+                    <div class="flex space-x-4">
+                        <button type="submit" class="bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <i class="fas fa-search mr-2"></i>
+                            Apply Filters
+                        </button>
+                        <a href="{{ route('admin.comments.index') }}" class="bg-gradient-to-r from-gray-300 to-gray-400 hover:from-gray-400 hover:to-gray-500 text-gray-700 px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <i class="fas fa-times mr-2"></i>
+                            Clear Filters
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Comments List -->
+        @if(isset($comments) && $comments->count() > 0)
+            <div class="modern-card hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-orange-50">
+                <div class="modern-card-header border-b border-orange-100 pb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="modern-card-title text-xl font-bold flex items-center">
+                                <div class="w-3 h-3 bg-orange-400 rounded-full mr-3"></div>
+                                All Comments
+                            </h3>
+                            <p class="text-gray-500 text-sm mt-1">Manage user comments and interactions</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modern-card-content pt-8">
+                    <div class="space-y-6">
+                        @foreach($comments as $comment)
+                            <div class="comment-item group relative">
+                                <div class="absolute inset-0 bg-gradient-to-r from-orange-200 to-amber-200 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
+                                <div class="relative bg-white/90 backdrop-blur-xl rounded-2xl p-6 border border-orange-100 hover:border-orange-200 transition-all duration-300">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                                                <span class="text-white font-bold text-lg">{{ substr($comment->name, 0, 1) }}</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="text-gray-800 font-bold text-lg">{{ $comment->name }}</h4>
+                                                <p class="text-gray-500 text-sm">{{ $comment->email }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            @php
+                                                $statusColors = [
+                                                    'pending' => 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white',
+                                                    'approved' => 'bg-gradient-to-r from-amber-400 to-yellow-400 text-white',
+                                                    'rejected' => 'bg-gradient-to-r from-red-400 to-pink-400 text-white',
+                                                    'spam' => 'bg-gradient-to-r from-orange-400 to-red-400 text-white'
+                                                ];
+                                            @endphp
+                                            <span class="px-3 py-1 rounded-full text-xs font-medium shadow-lg {{ $statusColors[$comment->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                                {{ ucfirst($comment->status) }}
+                                            </span>
+                                            @if($comment->is_spam ?? false)
+                                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-red-400 to-pink-400 text-white shadow-lg">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i>Spam
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                                        <p class="text-gray-700 leading-relaxed">{{ $comment->comment }}</p>
+                                    </div>
+
+                                    <div class="flex justify-between items-center">
+                                        <div class="text-sm text-gray-500">
+                                            <div class="flex items-center space-x-4">
+                                                <span class="flex items-center bg-orange-100 px-3 py-1 rounded-lg">
+                                                    <i class="fas fa-image mr-2 text-orange-500"></i>
+                                                    {{ $comment->photo->title ?? 'Unknown Photo' }}
+                                                </span>
+                                                <span class="flex items-center bg-gray-100 px-3 py-1 rounded-lg">
+                                                    <i class="fas fa-calendar mr-2 text-gray-500"></i>
+                                                    {{ $comment->created_at->format('M d, Y H:i') }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center space-x-2">
+                                            @if($comment->status === 'pending')
+                                                <button onclick="approveComment({{ $comment->id }})" class="bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                                    <i class="fas fa-check mr-1"></i>
+                                                    Approve
+                                                </button>
+                                                <button onclick="rejectComment({{ $comment->id }})" class="bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                                    <i class="fas fa-times mr-1"></i>
+                                                    Reject
+                                                </button>
+                                            @endif
+                                            <button onclick="markSpam({{ $comment->id }})" class="bg-gradient-to-r from-orange-400 to-red-400 hover:from-orange-500 hover:to-red-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                Spam
+                                            </button>
+                                            <button onclick="deleteComment({{ $comment->id }})" class="bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                                <i class="fas fa-trash mr-1"></i>
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
 
             <!-- Pagination -->
-            <div class="mt-8">
-                {{ $comments->links() }}
-            </div>
+            @if(method_exists($comments, 'links'))
+                <div class="mt-12 flex justify-center">
+                    {{ $comments->links() }}
+                </div>
+            @endif
         @else
-            <div class="text-center py-12">
-                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                </svg>
-                <h3 class="text-xl font-semibold text-white mb-2">No comments found</h3>
-                <p class="text-gray-400">Comments will appear here when visitors leave feedback on photos.</p>
+            <div class="text-center py-16">
+                <div class="bg-gradient-to-br from-orange-100 to-amber-100 rounded-full w-32 h-32 flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-comments text-6xl text-orange-400"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800 mb-4">No Comments Found</h3>
+                <p class="text-gray-600 mb-8 max-w-md mx-auto text-lg">Comments will appear here when visitors interact with your photos.</p>
             </div>
         @endif
     </div>
@@ -302,58 +296,6 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('.comment-checkbox');
-    const bulkActions = document.getElementById('bulk-actions');
-    const selectedCount = document.getElementById('selected-count');
-    const bulkForm = document.getElementById('bulk-form');
-
-    function updateBulkActions() {
-        const selected = document.querySelectorAll('.comment-checkbox:checked');
-        const count = selected.length;
-        
-        if (count > 0) {
-            bulkActions.style.display = 'block';
-            selectedCount.textContent = `${count} comment${count > 1 ? 's' : ''} selected`;
-            
-            // Add hidden inputs for selected comments
-            const existingInputs = bulkForm.querySelectorAll('input[name="comments[]"]');
-            existingInputs.forEach(input => input.remove());
-            
-            selected.forEach(checkbox => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'comments[]';
-                input.value = checkbox.value;
-                bulkForm.appendChild(input);
-            });
-        } else {
-            bulkActions.style.display = 'none';
-        }
-    }
-
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateBulkActions);
-    });
-
-    // Bulk form submission
-    bulkForm.addEventListener('submit', function(e) {
-        const action = this.querySelector('select[name="action"]').value;
-        if (!action) {
-            e.preventDefault();
-            alert('Please select an action');
-            return;
-        }
-        
-        if (action === 'delete') {
-            if (!confirm('Are you sure you want to delete the selected comments? This action cannot be undone.')) {
-                e.preventDefault();
-                return;
-            }
-        }
-    });
-});
-
 function approveComment(commentId) {
     fetch(`/admin/comments/${commentId}/approve`, {
         method: 'POST',
@@ -387,35 +329,21 @@ function rejectComment(commentId) {
 }
 
 function markSpam(commentId) {
-    fetch(`/admin/comments/${commentId}/mark-spam`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        }
-    });
-}
-
-function unmarkSpam(commentId) {
-    fetch(`/admin/comments/${commentId}/unmark-spam`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        }
-    });
+    if (confirm('Are you sure you want to mark this comment as spam?')) {
+        fetch(`/admin/comments/${commentId}/mark-spam`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
 }
 
 function deleteComment(commentId) {
@@ -433,7 +361,7 @@ function deleteComment(commentId) {
 }
 
 function autoModerate() {
-    if (confirm('Run automatic moderation? This will detect spam and auto-approve trusted users.')) {
+    if (confirm('Auto-moderate all pending comments using AI? This will automatically approve or reject comments based on content analysis.')) {
         fetch('/admin/comments/auto-moderate', {
             method: 'POST',
             headers: {
@@ -443,8 +371,8 @@ function autoModerate() {
         })
         .then(response => response.json())
         .then(data => {
-            alert(data.message);
             if (data.success) {
+                alert(data.message);
                 location.reload();
             }
         });

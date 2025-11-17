@@ -9,13 +9,13 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
+// use Intervention\Image\Facades\Image;
 
 class PhotoController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        // Middleware handled by route group
     }
 
     public function index(Request $request)
@@ -41,6 +41,11 @@ class PhotoController extends Controller
             $query->where('is_active', $request->status);
         }
 
+        // Filter by featured
+        if ($request->has('featured') && $request->featured !== '') {
+            $query->where('is_featured', $request->featured);
+        }
+
         // Sort options
         $sort = $request->get('sort', 'latest');
         switch ($sort) {
@@ -59,8 +64,15 @@ class PhotoController extends Controller
 
         $photos = $query->paginate(12)->withQueryString();
         $categories = Category::active()->ordered()->get();
+        
+        // Stats for dashboard
+        $stats = [
+            'featured' => Photo::where('is_featured', true)->count(),
+            'active' => Photo::where('is_active', true)->count(),
+            'total_views' => Photo::sum('view_count'),
+        ];
 
-        return view('admin.photos.index', compact('photos', 'categories'));
+        return view('admin.photos.index', compact('photos', 'categories', 'stats'));
     }
 
     public function create()
@@ -94,8 +106,14 @@ class PhotoController extends Controller
             $photo->uploaded_by = auth()->id();
 
             // Handle image upload
-            if ($request->hasFile('image')) {
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
                 $image = $request->file('image');
+                
+                // Validate file exists and is readable
+                if (!$image->isValid()) {
+                    throw new \Exception('Uploaded file is not valid');
+                }
+                
                 $filename = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
                 
                 // Create directories if they don't exist
@@ -109,24 +127,35 @@ class PhotoController extends Controller
                     mkdir($thumbnailPath, 0755, true);
                 }
 
-                // Store original image
-                $image->move($publicPath, $filename);
-                $photo->image_path = 'photos/' . $filename;
+                // Store original image using Laravel's store method (more reliable)
+                $path = $image->storeAs('photos', $filename, 'public');
+                
+                $photo->path = $path;
+                $photo->filename = $filename;
+                $photo->original_filename = $image->getClientOriginalName();
+                $photo->mime_type = $image->getMimeType();
 
-                // Create thumbnail
+                // Get full path for thumbnail creation
+                $fullPath = storage_path('app/public/' . $path);
+
+                // Create thumbnail using GD library
                 $thumbnailFilename = 'thumb_' . $filename;
-                $img = Image::make($publicPath . '/' . $filename);
-                $img->fit(300, 300, function ($constraint) {
-                    $constraint->upsize();
-                });
-                $img->save($thumbnailPath . '/' . $thumbnailFilename);
+                $thumbnailFullPath = storage_path('app/public/photos/thumbnails/' . $thumbnailFilename);
+                
+                // Ensure thumbnail directory exists
+                $thumbnailDir = dirname($thumbnailFullPath);
+                if (!file_exists($thumbnailDir)) {
+                    mkdir($thumbnailDir, 0755, true);
+                }
+                
+                $this->createThumbnail($fullPath, $thumbnailFullPath, 300, 300);
                 $photo->thumbnail_path = 'photos/thumbnails/' . $thumbnailFilename;
 
                 // Get image dimensions
-                $imageInfo = getimagesize($publicPath . '/' . $filename);
+                $imageInfo = getimagesize($fullPath);
                 $photo->width = $imageInfo[0];
                 $photo->height = $imageInfo[1];
-                $photo->file_size = filesize($publicPath . '/' . $filename);
+                $photo->file_size = $image->getSize();
             }
 
             $photo->save();
@@ -183,38 +212,60 @@ class PhotoController extends Controller
 
             // Handle new image upload
             if ($request->hasFile('image')) {
-                // Delete old images
-                if ($photo->image_path && file_exists(public_path('storage/' . $photo->image_path))) {
-                    unlink(public_path('storage/' . $photo->image_path));
+                // Delete old images from storage
+                $oldStoragePath = storage_path('app/public/' . $photo->path);
+                $oldThumbnailPath = storage_path('app/public/' . $photo->thumbnail_path);
+                
+                if ($photo->path && file_exists($oldStoragePath)) {
+                    unlink($oldStoragePath);
                 }
-                if ($photo->thumbnail_path && file_exists(public_path('storage/' . $photo->thumbnail_path))) {
-                    unlink(public_path('storage/' . $photo->thumbnail_path));
+                if ($photo->thumbnail_path && file_exists($oldThumbnailPath)) {
+                    unlink($oldThumbnailPath);
+                }
+                
+                // Also delete from public/storage if exists
+                $oldPublicPath = public_path('storage/' . $photo->path);
+                $oldPublicThumb = public_path('storage/' . $photo->thumbnail_path);
+                
+                if (file_exists($oldPublicPath)) {
+                    unlink($oldPublicPath);
+                }
+                if (file_exists($oldPublicThumb)) {
+                    unlink($oldPublicThumb);
                 }
 
                 $image = $request->file('image');
                 $filename = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
                 
-                $publicPath = public_path('storage/photos');
-                $thumbnailPath = public_path('storage/photos/thumbnails');
+                // Store new image using Laravel's store method
+                $path = $image->storeAs('photos', $filename, 'public');
+                
+                $photo->path = $path;
+                $photo->filename = $filename;
+                $photo->original_filename = $image->getClientOriginalName();
+                $photo->mime_type = $image->getMimeType();
 
-                // Store new image
-                $image->move($publicPath, $filename);
-                $photo->image_path = 'photos/' . $filename;
-
-                // Create new thumbnail
+                // Get full path for thumbnail creation
+                $fullPath = storage_path('app/public/' . $path);
+                
+                // Create new thumbnail using GD library
                 $thumbnailFilename = 'thumb_' . $filename;
-                $img = Image::make($publicPath . '/' . $filename);
-                $img->fit(300, 300, function ($constraint) {
-                    $constraint->upsize();
-                });
-                $img->save($thumbnailPath . '/' . $thumbnailFilename);
+                $thumbnailFullPath = storage_path('app/public/photos/thumbnails/' . $thumbnailFilename);
+                
+                // Ensure thumbnail directory exists
+                $thumbnailDir = dirname($thumbnailFullPath);
+                if (!file_exists($thumbnailDir)) {
+                    mkdir($thumbnailDir, 0755, true);
+                }
+                
+                $this->createThumbnail($fullPath, $thumbnailFullPath, 300, 300);
                 $photo->thumbnail_path = 'photos/thumbnails/' . $thumbnailFilename;
 
                 // Update image info
-                $imageInfo = getimagesize($publicPath . '/' . $filename);
+                $imageInfo = getimagesize($fullPath);
                 $photo->width = $imageInfo[0];
                 $photo->height = $imageInfo[1];
-                $photo->file_size = filesize($publicPath . '/' . $filename);
+                $photo->file_size = $image->getSize();
             }
 
             $photo->save();
@@ -239,12 +290,26 @@ class PhotoController extends Controller
     public function destroy(Photo $photo)
     {
         try {
-            // Delete image files
-            if ($photo->image_path && file_exists(public_path('storage/' . $photo->image_path))) {
-                unlink(public_path('storage/' . $photo->image_path));
+            // Delete image files from storage
+            $storagePath = storage_path('app/public/' . $photo->path);
+            $thumbnailPath = storage_path('app/public/' . $photo->thumbnail_path);
+            
+            if ($photo->path && file_exists($storagePath)) {
+                unlink($storagePath);
             }
-            if ($photo->thumbnail_path && file_exists(public_path('storage/' . $photo->thumbnail_path))) {
-                unlink(public_path('storage/' . $photo->thumbnail_path));
+            if ($photo->thumbnail_path && file_exists($thumbnailPath)) {
+                unlink($thumbnailPath);
+            }
+
+            // Also try to delete from public/storage if symlink exists
+            $publicPath = public_path('storage/' . $photo->path);
+            $publicThumbPath = public_path('storage/' . $photo->thumbnail_path);
+            
+            if (file_exists($publicPath)) {
+                unlink($publicPath);
+            }
+            if (file_exists($publicThumbPath)) {
+                unlink($publicThumbPath);
             }
 
             // Delete database record (this will also delete related records due to foreign key constraints)
@@ -298,12 +363,26 @@ class PhotoController extends Controller
             switch ($request->action) {
                 case 'delete':
                     foreach ($photos->get() as $photo) {
-                        // Delete files
-                        if ($photo->image_path && file_exists(public_path('storage/' . $photo->image_path))) {
-                            unlink(public_path('storage/' . $photo->image_path));
+                        // Delete files from storage
+                        $storagePath = storage_path('app/public/' . $photo->path);
+                        $thumbnailPath = storage_path('app/public/' . $photo->thumbnail_path);
+                        
+                        if ($photo->path && file_exists($storagePath)) {
+                            unlink($storagePath);
                         }
-                        if ($photo->thumbnail_path && file_exists(public_path('storage/' . $photo->thumbnail_path))) {
-                            unlink(public_path('storage/' . $photo->thumbnail_path));
+                        if ($photo->thumbnail_path && file_exists($thumbnailPath)) {
+                            unlink($thumbnailPath);
+                        }
+                        
+                        // Also delete from public/storage if exists
+                        $publicPath = public_path('storage/' . $photo->path);
+                        $publicThumb = public_path('storage/' . $photo->thumbnail_path);
+                        
+                        if (file_exists($publicPath)) {
+                            unlink($publicPath);
+                        }
+                        if (file_exists($publicThumb)) {
+                            unlink($publicThumb);
                         }
                     }
                     $photos->delete();
@@ -337,6 +416,82 @@ class PhotoController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                            ->with('error', 'Bulk action failed: ' . $e->getMessage());
+        }
+    }
+
+    private function createThumbnail($sourcePath, $destinationPath, $width, $height)
+    {
+        // Check if GD extension is loaded
+        if (!extension_loaded('gd')) {
+            // If GD not available, just copy the original file
+            copy($sourcePath, $destinationPath);
+            return true;
+        }
+
+        try {
+            $imageInfo = getimagesize($sourcePath);
+            $mime = $imageInfo['mime'];
+
+            switch ($mime) {
+                case 'image/jpeg':
+                    $source = imagecreatefromjpeg($sourcePath);
+                    break;
+                case 'image/png':
+                    $source = imagecreatefrompng($sourcePath);
+                    break;
+                case 'image/gif':
+                    $source = imagecreatefromgif($sourcePath);
+                    break;
+                default:
+                    // Unsupported format, just copy
+                    copy($sourcePath, $destinationPath);
+                    return true;
+            }
+
+            $sourceWidth = imagesx($source);
+            $sourceHeight = imagesy($source);
+
+            // Calculate aspect ratio
+            $aspectRatio = $sourceWidth / $sourceHeight;
+            
+            if ($width / $height > $aspectRatio) {
+                $width = $height * $aspectRatio;
+            } else {
+                $height = $width / $aspectRatio;
+            }
+
+            $thumbnail = imagecreatetruecolor($width, $height);
+            
+            // Preserve transparency for PNG and GIF
+            if ($mime == 'image/png' || $mime == 'image/gif') {
+                imagealphablending($thumbnail, false);
+                imagesavealpha($thumbnail, true);
+                $transparent = imagecolorallocatealpha($thumbnail, 255, 255, 255, 127);
+                imagefilledrectangle($thumbnail, 0, 0, $width, $height, $transparent);
+            }
+
+            imagecopyresampled($thumbnail, $source, 0, 0, 0, 0, $width, $height, $sourceWidth, $sourceHeight);
+
+            switch ($mime) {
+                case 'image/jpeg':
+                    imagejpeg($thumbnail, $destinationPath, 90);
+                    break;
+                case 'image/png':
+                    imagepng($thumbnail, $destinationPath);
+                    break;
+                case 'image/gif':
+                    imagegif($thumbnail, $destinationPath);
+                    break;
+            }
+
+            imagedestroy($source);
+            imagedestroy($thumbnail);
+            
+            return true;
+        } catch (\Exception $e) {
+            // If thumbnail creation fails, just copy the original
+            copy($sourcePath, $destinationPath);
+            return true;
         }
     }
 }

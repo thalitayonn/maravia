@@ -18,6 +18,11 @@ class AdminController extends Controller
 {
     public function showLogin()
     {
+        // If user is already authenticated, redirect to admin dashboard
+        if (auth()->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+        
         return view('admin.login');
     }
 
@@ -56,10 +61,11 @@ class AdminController extends Controller
                                        ->whereYear('created_at', now()->year)
                                        ->count(),
             'total_categories' => Category::active()->count(),
-            'total_views' => PhotoView::sum('view_count'),
-            'views_today' => PhotoView::whereDate('created_at', today())->sum('view_count'),
+            'total_views' => PhotoView::count(),
+            'views_today' => PhotoView::whereDate('viewed_at', today())->count(),
             'total_testimonials' => Testimonial::count(),
             'pending_testimonials' => Testimonial::pending()->count(),
+            'featured_photos' => Photo::where('is_featured', true)->count(),
         ];
 
         // Get recent photos
@@ -71,7 +77,10 @@ class AdminController extends Controller
         // Get chart data for the last 7 days
         $chart_data = $this->getViewsChartData();
 
-        return view('admin.dashboard', compact('stats', 'recent_photos', 'chart_data'));
+        // Get recent activities
+        $recentActivities = $this->getRecentActivities();
+
+        return view('admin.dashboard', compact('stats', 'recent_photos', 'chart_data', 'recentActivities'));
     }
 
     private function getViewsChartData()
@@ -83,8 +92,8 @@ class AdminController extends Controller
             $date = now()->subDays($i);
             $labels[] = $date->format('M j');
             
-            $dayViews = PhotoView::whereDate('created_at', $date->toDateString())
-                               ->sum('view_count');
+            $dayViews = PhotoView::whereDate('viewed_at', $date->toDateString())
+                               ->count();
             $views[] = $dayViews;
         }
         
@@ -92,6 +101,54 @@ class AdminController extends Controller
             'labels' => $labels,
             'views' => $views
         ];
+    }
+
+    private function getRecentActivities()
+    {
+        $activities = [];
+
+        // Get recent photos (last 10)
+        $recentPhotos = Photo::with('uploader')->latest()->limit(10)->get();
+        foreach ($recentPhotos as $photo) {
+            $activities[] = [
+                'title' => 'Foto baru ditambahkan: ' . $photo->title,
+                'time' => $photo->created_at->diffForHumans(),
+                'icon' => 'fa-image',
+                'color' => 'blue',
+                'created_at' => $photo->created_at,
+            ];
+        }
+
+        // Get recent categories
+        $recentCategories = Category::latest()->limit(5)->get();
+        foreach ($recentCategories as $category) {
+            $activities[] = [
+                'title' => 'Kategori baru: ' . $category->name,
+                'time' => $category->created_at->diffForHumans(),
+                'icon' => 'fa-folder',
+                'color' => 'green',
+                'created_at' => $category->created_at,
+            ];
+        }
+
+        // Get recent testimonials
+        $recentTestimonials = Testimonial::latest()->limit(5)->get();
+        foreach ($recentTestimonials as $testimonial) {
+            $activities[] = [
+                'title' => 'Testimoni baru dari: ' . $testimonial->name,
+                'time' => $testimonial->created_at->diffForHumans(),
+                'icon' => 'fa-comment',
+                'color' => 'yellow',
+                'created_at' => $testimonial->created_at,
+            ];
+        }
+
+        // Sort by created_at descending and take 10
+        usort($activities, function($a, $b) {
+            return $b['created_at'] <=> $a['created_at'];
+        });
+
+        return array_slice($activities, 0, 10);
     }
 
     public function admins()

@@ -3,209 +3,195 @@
 @section('title', 'Manage Categories')
 
 @section('content')
-<div class="flex-1 overflow-auto">
+<div class="admin-page space-y-8">
     <!-- Header -->
-    <div class="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-10">
-        <div class="px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-white">Manage Categories</h1>
-                    <p class="text-blue-200 mt-1">Organize photos into categories</p>
+    <div class="admin-header">
+        <div class="px-6 py-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div class="space-y-2">
+                    <h1 class="text-2xl lg:text-3xl font-bold">Manage Categories</h1>
+                    <p class="text-gray-600 text-sm lg:text-base">Organize and structure your photo collections</p>
                 </div>
-                <a href="{{ route('admin.categories.create') }}" class="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105">
-                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                    Add Category
-                </a>
+                <div class="flex space-x-3">
+                    <a href="{{ route('admin.categories.create') }}" 
+                       class="inline-flex items-center px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+                       style="background: #A3D5FF; color: #1C1C1C;">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Category
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="p-6">
-        <!-- Search and Filters -->
-        <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 mb-6">
-            <form method="GET" action="{{ route('admin.categories.index') }}" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Search -->
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">Search</label>
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                               placeholder="Search categories..." 
-                               class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500">
+    <!-- Stats Card -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-lg mb-3">Structure and organize your photo collections</p>
+                <div class="flex items-center space-x-8 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 rounded-full mr-2" style="background: #FEEA77;"></div>
+                        <i class="fas fa-folder mr-2" style="color: #FEEA77;"></i>
+                        {{ $categories->total() }} Categories
                     </div>
-
-                    <!-- Status Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">Status</label>
-                        <select name="status" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <option value="">All Status</option>
-                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Active</option>
-                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Inactive</option>
-                        </select>
-                    </div>
-
-                    <!-- Sort -->
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">Sort By</label>
-                        <select name="sort" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <option value="order" {{ request('sort') === 'order' ? 'selected' : '' }}>Display Order</option>
-                            <option value="name" {{ request('sort') === 'name' ? 'selected' : '' }}>Name A-Z</option>
-                            <option value="photos" {{ request('sort') === 'photos' ? 'selected' : '' }}>Most Photos</option>
-                            <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Latest First</option>
-                        </select>
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 rounded-full mr-2" style="background: #FEEA77;"></div>
+                        <i class="fas fa-sort mr-2" style="color: #FEEA77;"></i>
+                        Smart Organization
                     </div>
                 </div>
-
-                <div class="flex space-x-3">
-                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors">
-                        Apply Filters
-                    </button>
-                    <a href="{{ route('admin.categories.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
-                        Clear Filters
-                    </a>
-                </div>
-            </form>
+            </div>
+            <div class="text-5xl" style="color: #FEEA77;">
+                <i class="fas fa-folder"></i>
+            </div>
         </div>
+    </div>
 
-        <!-- Bulk Actions -->
-        <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 mb-6" id="bulk-actions" style="display: none;">
-            <form method="POST" action="{{ route('admin.categories.bulk-action') }}" id="bulk-form">
-                @csrf
-                <div class="flex items-center space-x-4">
-                    <span class="text-white font-medium">With selected:</span>
-                    <select name="action" class="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
-                        <option value="">Choose action...</option>
-                        <option value="activate">Activate</option>
-                        <option value="deactivate">Deactivate</option>
-                        <option value="delete">Delete</option>
-                    </select>
-                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors">
-                        Apply Action
-                    </button>
-                    <span class="text-blue-200" id="selected-count">0 categories selected</span>
-                </div>
-            </form>
+    <!-- Search and Filters -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                    <div class="w-3 h-3 rounded-full mr-3" style="background: #FEEA77;"></div>
+                    Search & Filter Categories
+                </h3>
+                <p class="text-gray-500 text-sm mt-1">Find and organize your categories efficiently</p>
+            </div>
+            <div class="px-3 py-1 rounded-full text-xs font-medium" style="background: #FEEA77; color: #1C1C1C;">
+                <i class="fas fa-search mr-1"></i>
+                Smart Filter
+            </div>
         </div>
-
-        <!-- Categories List -->
-        @if($categories->count() > 0)
-            <div class="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 overflow-hidden">
-                <div class="p-4 border-b border-white/20">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-white">Categories</h3>
-                        @if(request('sort', 'order') === 'order')
-                            <p class="text-blue-200 text-sm">Drag to reorder categories</p>
-                        @endif
-                    </div>
-                </div>
-
-                <div id="categories-list" class="divide-y divide-white/10">
-                    @foreach($categories as $category)
-                        <div class="category-item p-4 hover:bg-white/5 transition-colors" data-id="{{ $category->id }}">
-                            <div class="flex items-center space-x-4">
-                                <!-- Checkbox -->
-                                <input type="checkbox" name="category_ids[]" value="{{ $category->id }}" 
-                                       class="category-checkbox w-5 h-5 text-green-600 bg-white/20 border-white/40 rounded focus:ring-green-500">
-
-                                <!-- Drag Handle (only show when sorting by order) -->
-                                @if(request('sort', 'order') === 'order')
-                                    <div class="drag-handle cursor-move text-gray-400 hover:text-white transition-colors">
-                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
-                                        </svg>
-                                    </div>
-                                @endif
-
-                                <!-- Color & Icon -->
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" 
-                                         style="background-color: {{ $category->color }}">
-                                        @if($category->icon)
-                                            <i class="{{ $category->icon }} text-white text-sm"></i>
-                                        @else
-                                            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
-                                            </svg>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <!-- Category Info -->
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center space-x-3">
-                                        <h4 class="text-white font-semibold">{{ $category->name }}</h4>
-                                        @if(!$category->is_active)
-                                            <span class="inline-block bg-red-500 text-white text-xs px-2 py-1 rounded-full">Inactive</span>
-                                        @endif
-                                    </div>
-                                    @if($category->description)
-                                        <p class="text-blue-200 text-sm mt-1">{{ Str::limit($category->description, 100) }}</p>
-                                    @endif
-                                    <div class="flex items-center space-x-4 mt-2 text-xs text-gray-400">
-                                        <span>{{ $category->photos_count }} photos</span>
-                                        <span>Created {{ $category->created_at->format('M j, Y') }}</span>
-                                    </div>
-                                </div>
-
-                                <!-- Quick Actions -->
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="toggleActive({{ $category->id }})" 
-                                            class="bg-{{ $category->is_active ? 'red' : 'green' }}-500 hover:bg-{{ $category->is_active ? 'red' : 'green' }}-600 text-white p-2 rounded-lg transition-colors">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            @if($category->is_active)
-                                                <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM4 10a6 6 0 1112 0 6 6 0 01-12 0z" clip-rule="evenodd"/>
-                                            @else
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                            @endif
-                                        </svg>
-                                    </button>
-
-                                    <a href="{{ route('admin.categories.show', $category) }}" 
-                                       class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
-                                    </a>
-
-                                    <a href="{{ route('admin.categories.edit', $category) }}" 
-                                       class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </a>
-
-                                    <button onclick="deleteCategory({{ $category->id }})" 
-                                            class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition-colors">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zM8 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd"/>
-                                        </svg>
-                                    </button>
+        <div>
+                <form method="GET" action="{{ route('admin.categories.index') }}" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Search -->
+                        <div class="group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Search Categories</label>
+                            <div class="relative">
+                                <input type="text" name="search" value="{{ request('search') }}" 
+                                       placeholder="Search by name, description..." 
+                                       class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent transition-all duration-300 group-hover:border-orange-200">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <i class="fas fa-search text-gray-400"></i>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
-                </div>
+
+                        <!-- Status Filter -->
+                        <div class="group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                            <select name="status" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent transition-all duration-300 group-hover:border-orange-200">
+                                <option value="">All Status</option>
+                                <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Active</option>
+                                <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Inactive</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort -->
+                        <div class="group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
+                            <select name="sort" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent transition-all duration-300 group-hover:border-orange-200">
+                                <option value="name" {{ request('sort') === 'name' ? 'selected' : '' }}>Name A-Z</option>
+                                <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Latest First</option>
+                                <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Oldest First</option>
+                                <option value="photos_count" {{ request('sort') === 'photos_count' ? 'selected' : '' }}>Most Photos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-4">
+                        <button type="submit" class="inline-flex items-center px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg" style="background: #A3D5FF; color: #1C1C1C;">
+                            <i class="fas fa-search mr-2"></i>
+                            Apply Filters
+                        </button>
+                        <a href="{{ route('admin.categories.index') }}" class="inline-flex items-center bg-white hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border border-gray-200">
+                            <i class="fas fa-times mr-2"></i>
+                            Clear Filters
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Categories Grid -->
+        @if($categories->count() > 0)
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach($categories as $category)
+                    <div class="group relative">
+                        <div class="absolute inset-0 bg-orange-200 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
+                        <div class="relative bg-white/90 backdrop-blur-xl rounded-2xl p-6 border border-orange-100 hover:border-orange-200 transition-all duration-300 transform hover:scale-105">
+                            <!-- Category Header -->
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-2">{{ $category->name }}</h3>
+                                    @if($category->description)
+                                        <p class="text-gray-600 text-sm line-clamp-2">{{ $category->description }}</p>
+                                    @endif
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    @if($category->is_active)
+                                        <span class="inline-block text-xs px-3 py-1 rounded-full font-medium" style="background: #9DE4B3; color: #1C1C1C;">
+                                            <i class="fas fa-check mr-1"></i>Active
+                                        </span>
+                                    @else
+                                        <span class="inline-block text-xs px-3 py-1 rounded-full font-medium" style="background: #FF6F61; color: white;">
+                                            <i class="fas fa-pause mr-1"></i>Inactive
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Category Stats -->
+                            <div class="bg-orange-50 rounded-xl p-4 mb-6">
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <div class="text-2xl font-bold text-orange-600">{{ $category->photos_count ?? 0 }}</div>
+                                        <div class="text-xs text-gray-600">Photos</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-2xl font-bold text-amber-600">{{ $category->created_at->format('M Y') }}</div>
+                                        <div class="text-xs text-gray-600">Created</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex space-x-2">
+                                <a href="{{ route('admin.categories.show', $category) }}" 
+                                   class="flex-1 bg-gradient-to-r from-orange-400 to-amber-400 hover:from-orange-500 hover:to-amber-500 text-white text-center py-2 px-3 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+                                    <i class="fas fa-eye mr-1"></i>View
+                                </a>
+                                <a href="{{ route('admin.categories.edit', $category) }}" 
+                                   class="flex-1 bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-white text-center py-2 px-3 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+                                    <i class="fas fa-edit mr-1"></i>Edit
+                                </a>
+                                <button onclick="deleteCategory({{ $category->id }})" 
+                                        class="bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500 text-white py-2 px-3 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
 
             <!-- Pagination -->
-            <div class="mt-8">
+            <div class="mt-12 flex justify-center">
                 {{ $categories->links() }}
             </div>
         @else
-            <div class="text-center py-12">
-                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                </svg>
-                <h3 class="text-xl font-semibold text-white mb-2">No categories found</h3>
-                <p class="text-gray-400 mb-4">Create your first category to organize photos.</p>
+            <div class="text-center py-16">
+                <div class="bg-gradient-to-br from-orange-100 to-amber-100 rounded-full w-32 h-32 flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-folder text-6xl text-orange-400"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800 mb-4">No categories found</h3>
+                <p class="text-gray-600 mb-8 max-w-md mx-auto text-lg">Start organizing your photos by creating your first category. Group similar photos together for better management!</p>
                 <a href="{{ route('admin.categories.create') }}" 
-                   class="inline-flex items-center bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                    Add First Category
+                   class="inline-flex items-center bg-gradient-to-r from-orange-400 to-amber-400 text-white px-8 py-4 rounded-xl font-semibold hover:from-orange-500 hover:to-amber-500 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-plus mr-2"></i>
+                    Create First Category
                 </a>
             </div>
         @endif
@@ -213,124 +199,9 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('.category-checkbox');
-    const bulkActions = document.getElementById('bulk-actions');
-    const selectedCount = document.getElementById('selected-count');
-    const bulkForm = document.getElementById('bulk-form');
-    const categoriesList = document.getElementById('categories-list');
-
-    // Bulk actions functionality
-    function updateBulkActions() {
-        const selected = document.querySelectorAll('.category-checkbox:checked');
-        const count = selected.length;
-        
-        if (count > 0) {
-            bulkActions.style.display = 'block';
-            selectedCount.textContent = `${count} categor${count > 1 ? 'ies' : 'y'} selected`;
-            
-            // Add hidden inputs for selected categories
-            const existingInputs = bulkForm.querySelectorAll('input[name="categories[]"]');
-            existingInputs.forEach(input => input.remove());
-            
-            selected.forEach(checkbox => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'categories[]';
-                input.value = checkbox.value;
-                bulkForm.appendChild(input);
-            });
-        } else {
-            bulkActions.style.display = 'none';
-        }
-    }
-
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateBulkActions);
-    });
-
-    // Bulk form submission
-    bulkForm.addEventListener('submit', function(e) {
-        const action = this.querySelector('select[name="action"]').value;
-        if (!action) {
-            e.preventDefault();
-            alert('Please select an action');
-            return;
-        }
-        
-        if (action === 'delete') {
-            if (!confirm('Are you sure you want to delete the selected categories? Categories with photos cannot be deleted.')) {
-                e.preventDefault();
-                return;
-            }
-        }
-    });
-
-    // Sortable functionality (only when sorting by order)
-    @if(request('sort', 'order') === 'order')
-        if (categoriesList) {
-            const sortable = Sortable.create(categoriesList, {
-                handle: '.drag-handle',
-                animation: 150,
-                ghostClass: 'opacity-50',
-                onEnd: function(evt) {
-                    const categoryIds = [];
-                    const items = categoriesList.querySelectorAll('.category-item');
-                    
-                    items.forEach((item, index) => {
-                        categoryIds.push({
-                            id: parseInt(item.dataset.id),
-                            order: index + 1
-                        });
-                    });
-
-                    // Update order via AJAX
-                    fetch('{{ route("admin.categories.update-order") }}', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ categories: categoryIds })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.success) {
-                            console.error('Failed to update order:', data.message);
-                            // Revert the change
-                            location.reload();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error updating order:', error);
-                        location.reload();
-                    });
-                }
-            });
-        }
-    @endif
-});
-
-function toggleActive(categoryId) {
-    fetch(`/admin/categories/${categoryId}/toggle-active`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        }
-    });
-}
-
 function deleteCategory(categoryId) {
-    if (confirm('Are you sure you want to delete this category? Categories with photos cannot be deleted.')) {
+    if (confirm('Are you sure you want to delete this category? This action cannot be undone and will affect all photos in this category.')) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/admin/categories/${categoryId}`;

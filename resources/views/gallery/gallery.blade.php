@@ -3,8 +3,21 @@
 @section('title', 'Galeri Foto - ' . config('app.name'))
 
 @section('content')
+<!-- Breadcrumb -->
+<div class="bg-gray-50 border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center text-sm">
+            <a href="{{ route('home') }}" class="text-coral-500 hover:text-coral-600 font-medium">
+                <i class="fas fa-home mr-2"></i>Beranda
+            </a>
+            <i class="fas fa-chevron-right mx-3 text-gray-400"></i>
+            <span class="text-gray-700 font-medium">Galeri Foto</span>
+        </div>
+    </div>
+</div>
+
 <!-- Smart Search & Filter Section -->
-<section class="py-8 bg-gradient-to-r from-primary-50 to-school-50">
+<section class="py-8 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Search Bar with Autosuggest -->
         <div class="max-w-4xl mx-auto mb-8">
@@ -108,10 +121,12 @@
                         <div class="relative overflow-hidden rounded-2xl bg-white shadow-lg hover-lift">
                             <!-- Photo Image -->
                             <div class="aspect-w-16 aspect-h-12 overflow-hidden">
-                                <img src="{{ $photo->thumbnail_url }}" 
+                                <img src="{{ url('/api/photos/' . $photo->id . '/thumbnail') }}" 
                                      alt="{{ $photo->title }}" 
                                      class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
-                                     onclick="openLightbox({{ $photo->id }})">
+                                     onclick="openLightbox({{ $photo->id }})"
+                                     onerror="this.onerror=null; this.src='{{ url('/api/photos/' . $photo->id . '/image') }}'; console.log('Thumbnail failed, using original via API');"
+                                     onload="console.log('Image loaded successfully via API:', this.src);">
                             </div>
                             
                             <!-- Overlay Info -->

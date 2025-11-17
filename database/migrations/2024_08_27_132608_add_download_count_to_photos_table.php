@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('photos', function (Blueprint $table) {
-            $table->integer('download_count')->default(0)->after('view_count');
+            if (!Schema::hasColumn('photos', 'download_count')) {
+                $table->integer('download_count')->default(0)->after('view_count');
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('photos', function (Blueprint $table) {
-            $table->dropColumn('download_count');
+            if (Schema::hasColumn('photos', 'download_count')) {
+                $table->dropColumn('download_count');
+            }
         });
     }
 };

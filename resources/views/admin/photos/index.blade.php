@@ -3,194 +3,267 @@
 @section('title', 'Manage Photos')
 
 @section('content')
-<div class="flex-1 overflow-auto">
+<div class="admin-page space-y-8">
     <!-- Header -->
-    <div class="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-10">
-        <div class="px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-white">Manage Photos</h1>
-                    <p class="text-blue-200 mt-1">Upload, edit, and organize gallery photos</p>
+    <div class="admin-header relative z-10">
+        <div class="px-6 py-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div class="space-y-2">
+                    <h1 class="text-2xl lg:text-3xl font-bold">
+                        Manage Photos
+                    </h1>
+                    <p class="text-gray-600 text-sm lg:text-base">
+                        Upload, edit, and organize your beautiful gallery photos
+                    </p>
                 </div>
-                <a href="{{ route('admin.photos.create') }}" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105">
-                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                    Add Photo
-                </a>
+                <div class="flex space-x-3 relative z-20">
+                    <a href="{{ route('admin.photos.create') }}"
+                       class="inline-flex items-center px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+                       style="background: #A3D5FF; color: #1C1C1C;">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Photo
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="p-6">
-        <!-- Search and Filters -->
-        <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 mb-6">
-            <form method="GET" action="{{ route('admin.photos.index') }}" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <!-- Search -->
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">Search</label>
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                               placeholder="Search photos..." 
-                               class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-
-                    <!-- Category Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">Category</label>
-                        <select name="category" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">All Categories</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Status Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">Status</label>
-                        <select name="status" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">All Status</option>
-                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Active</option>
-                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Inactive</option>
-                        </select>
-                    </div>
-
-                    <!-- Sort -->
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-2">Sort By</label>
-                        <select name="sort" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Latest First</option>
-                            <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Oldest First</option>
-                            <option value="title" {{ request('sort') === 'title' ? 'selected' : '' }}>Title A-Z</option>
-                            <option value="views" {{ request('sort') === 'views' ? 'selected' : '' }}>Most Views</option>
-                        </select>
-                    </div>
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm mb-1">Total Photos</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $photos->total() }}</p>
                 </div>
-
-                <div class="flex space-x-3">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">
-                        Apply Filters
-                    </button>
-                    <a href="{{ route('admin.photos.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
-                        Clear Filters
-                    </a>
+                <div class="text-3xl" style="color: #FEEA77;">
+                    <i class="fas fa-images"></i>
                 </div>
-            </form>
+            </div>
         </div>
 
-        <!-- Bulk Actions -->
-        <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 mb-6" id="bulk-actions" style="display: none;">
-            <form method="POST" action="{{ route('admin.photos.bulk-action') }}" id="bulk-form">
-                @csrf
-                <div class="flex items-center space-x-4">
-                    <span class="text-white font-medium">With selected:</span>
-                    <select name="action" class="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Choose action...</option>
-                        <option value="activate">Activate</option>
-                        <option value="deactivate">Deactivate</option>
-                        <option value="feature">Mark as Featured</option>
-                        <option value="unfeature">Remove from Featured</option>
-                        <option value="delete">Delete</option>
-                    </select>
-                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors">
-                        Apply Action
-                    </button>
-                    <span class="text-blue-200" id="selected-count">0 photos selected</span>
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm mb-1">Featured</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['featured'] ?? 0 }}</p>
                 </div>
-            </form>
+                <div class="text-3xl" style="color: #FEEA77;">
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
         </div>
 
-        <!-- Photos Grid -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm mb-1">Active</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['active'] ?? 0 }}</p>
+                </div>
+                <div class="text-3xl" style="color: #FEEA77;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm mb-1">Total Views</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_views'] ?? 0) }}</p>
+                </div>
+                <div class="text-3xl" style="color: #FEEA77;">
+                    <i class="fas fa-eye"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <form method="GET" action="{{ route('admin.photos.index') }}" id="filterForm">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-filter mr-2 text-coral-500"></i>
+                            Filter & Search
+                        </h3>
+                        @if(request()->hasAny(['status', 'category', 'search']))
+                            <a href="{{ route('admin.photos.index') }}" 
+                               class="text-sm text-red-500 hover:text-red-700 font-semibold">
+                                <i class="fas fa-times-circle mr-1"></i>
+                                Clear Filters
+                            </a>
+                        @endif
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Status Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select name="status" 
+                                    onchange="this.form.submit()"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral-500 transition-all">
+                                <option value="">All Status</option>
+                                <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Active</option>
+                                <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Inactive</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Category Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select name="category" 
+                                    onchange="this.form.submit()"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral-500 transition-all">
+                                <option value="">All Categories</option>
+                                @foreach($categories ?? [] as $category)
+                                    <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <!-- Featured Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Featured</label>
+                            <select name="featured" 
+                                    onchange="this.form.submit()"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral-500 transition-all">
+                                <option value="">All</option>
+                                <option value="1" {{ request('featured') === '1' ? 'selected' : '' }}>Featured</option>
+                                <option value="0" {{ request('featured') === '0' ? 'selected' : '' }}>Non-Featured</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Search -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                            <div class="relative">
+                                <input type="text" 
+                                       name="search" 
+                                       value="{{ request('search') }}"
+                                       placeholder="Search photos..."
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-coral-500 transition-all">
+                                <button type="submit" 
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-coral-500 hover:text-coral-700">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Active Filters Display -->
+                    @if(request()->hasAny(['status', 'category', 'featured', 'search']))
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <span class="text-sm text-gray-600">Active filters:</span>
+                            @if(request('status') !== null)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-coral-100 text-coral-800">
+                                    Status: {{ request('status') == '1' ? 'Active' : 'Inactive' }}
+                                    <a href="{{ route('admin.photos.index', array_merge(request()->except('status'))) }}" 
+                                       class="ml-2 hover:text-coral-900">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </span>
+                            @endif
+                            @if(request('category'))
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
+                                    Category: {{ $categories->find(request('category'))->name ?? 'Unknown' }}
+                                    <a href="{{ route('admin.photos.index', array_merge(request()->except('category'))) }}" 
+                                       class="ml-2 hover:text-sky-900">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </span>
+                            @endif
+                            @if(request('featured') !== null)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-lemon-100 text-yellow-800">
+                                    {{ request('featured') == '1' ? 'Featured' : 'Non-Featured' }}
+                                    <a href="{{ route('admin.photos.index', array_merge(request()->except('featured'))) }}" 
+                                       class="ml-2 hover:text-yellow-900">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </span>
+                            @endif
+                            @if(request('search'))
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    Search: "{{ request('search') }}"
+                                    <a href="{{ route('admin.photos.index', array_merge(request()->except('search'))) }}" 
+                                       class="ml-2 hover:text-gray-900">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </span>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Photos Grid -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-900">Photos List</h3>
+            <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-500">Showing {{ $photos->count() }} of {{ $photos->total() }} photos</span>
+            </div>
+        </div>
+
         @if($photos->count() > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 @foreach($photos as $photo)
-                    <div class="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden border border-white/20 hover:border-white/40 transition-all duration-200 transform hover:scale-105">
-                        <!-- Checkbox -->
-                        <div class="absolute top-3 left-3 z-10">
-                            <input type="checkbox" name="photo_ids[]" value="{{ $photo->id }}" 
-                                   class="photo-checkbox w-5 h-5 text-blue-600 bg-white/20 border-white/40 rounded focus:ring-blue-500">
+                    <div class="group relative bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
+                        <div class="aspect-square overflow-hidden">
+                            <img src="{{ $photo->url }}?v={{ $photo->updated_at->timestamp }}"
+                                 alt="{{ $photo->title }}"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                         </div>
 
-                        <!-- Photo -->
-                        <div class="relative">
-                            <img src="{{ $photo->thumbnail_url }}" alt="{{ $photo->title }}" 
-                                 class="w-full h-48 object-cover">
-                            
-                            <!-- Status Badges -->
-                            <div class="absolute top-3 right-3 space-y-1">
-                                @if($photo->is_featured)
-                                    <span class="inline-block bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">Featured</span>
-                                @endif
-                                @if(!$photo->is_active)
-                                    <span class="inline-block bg-red-500 text-white text-xs px-2 py-1 rounded-full">Inactive</span>
-                                @endif
-                            </div>
-
-                            <!-- Quick Actions -->
-                            <div class="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div class="flex space-x-1">
-                                    <button onclick="toggleFeatured({{ $photo->id }})" 
-                                            class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-full transition-colors">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                        </svg>
-                                    </button>
-                                    <button onclick="toggleActive({{ $photo->id }})" 
-                                            class="bg-{{ $photo->is_active ? 'red' : 'green' }}-500 hover:bg-{{ $photo->is_active ? 'red' : 'green' }}-600 text-white p-2 rounded-full transition-colors">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            @if($photo->is_active)
-                                                <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM4 10a6 6 0 1112 0 6 6 0 01-12 0z" clip-rule="evenodd"/>
-                                            @else
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                            @endif
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Photo Info -->
-                        <div class="p-4">
-                            <h3 class="text-white font-semibold truncate mb-1">{{ $photo->title }}</h3>
-                            <p class="text-blue-200 text-sm mb-2">{{ $photo->category->name ?? 'No category' }}</p>
-                            
-                            @if($photo->tags->count() > 0)
-                                <div class="flex flex-wrap gap-1 mb-3">
-                                    @foreach($photo->tags->take(3) as $tag)
-                                        <span class="inline-block bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded">
-                                            {{ $tag->name }}
-                                        </span>
-                                    @endforeach
-                                    @if($photo->tags->count() > 3)
-                                        <span class="text-blue-300 text-xs">+{{ $photo->tags->count() - 3 }} more</span>
-                                    @endif
-                                </div>
+                        <!-- Status badges -->
+                        <div class="absolute top-3 left-3 flex space-x-2">
+                            @if($photo->is_featured)
+                                <span class="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                    <i class="fas fa-star mr-1"></i>Featured
+                                </span>
                             @endif
+                            @if(!$photo->is_active)
+                                <span class="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                    <i class="fas fa-eye-slash mr-1"></i>Inactive
+                                </span>
+                            @endif
+                        </div>
 
-                            <div class="flex items-center justify-between text-xs text-gray-400 mb-3">
-                                <span>{{ $photo->view_count }} views</span>
-                                <span>{{ $photo->created_at->format('M j, Y') }}</span>
-                            </div>
-
-                            <!-- Action Buttons -->
+                        <!-- Action buttons -->
+                        <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <div class="flex space-x-2">
-                                <a href="{{ route('admin.photos.show', $photo) }}" 
-                                   class="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-center py-2 px-3 rounded text-sm transition-colors">
-                                    View
+                                <a href="{{ route('admin.photos.show', $photo) }}"
+                                   class="bg-white/90 hover:bg-white p-2 rounded-full shadow-md">
+                                    <i class="fas fa-eye text-gray-600"></i>
                                 </a>
-                                <a href="{{ route('admin.photos.edit', $photo) }}" 
-                                   class="flex-1 bg-green-500 hover:bg-green-600 text-white text-center py-2 px-3 rounded text-sm transition-colors">
-                                    Edit
+                                <a href="{{ route('admin.photos.edit', $photo) }}"
+                                   class="bg-white/90 hover:bg-white p-2 rounded-full shadow-md">
+                                    <i class="fas fa-edit text-teal-600"></i>
                                 </a>
-                                <button onclick="deletePhoto({{ $photo->id }})" 
-                                        class="bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded text-sm transition-colors">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zM8 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Photo info -->
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-900 truncate">{{ $photo->title }}</h4>
+                            <p class="text-sm text-gray-500 mt-1">{{ $photo->category->name ?? 'No Category' }}</p>
+
+                            <div class="flex items-center justify-between mt-3 text-xs text-gray-500">
+                                <span class="flex items-center">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    {{ $photo->view_count ?? 0 }}
+                                </span>
+                                <span class="flex items-center">
+                                    <i class="fas fa-heart mr-1"></i>
+                                    {{ $photo->favorites_count ?? 0 }}
+                                </span>
+                                <span>{{ $photo->created_at->format('M j') }}</span>
                             </div>
                         </div>
                     </div>
@@ -199,26 +272,25 @@
 
             <!-- Pagination -->
             <div class="mt-8">
-                {{ $photos->links() }}
+                {{ $photos->appends(request()->query())->links() }}
             </div>
         @else
-            <div class="text-center py-12">
-                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                <h3 class="text-xl font-semibold text-white mb-2">No photos found</h3>
-                <p class="text-gray-400 mb-4">Start by uploading your first photo to the gallery.</p>
-                <a href="{{ route('admin.photos.create') }}" 
-                   class="inline-flex items-center bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                    Add First Photo
+            <div class="text-center py-16">
+                <div class="bg-gradient-to-br from-teal-100 to-teal-200 rounded-full w-32 h-32 flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-images text-5xl text-teal-600"></i>
+                </div>
+                <h4 class="text-2xl font-bold text-gray-800 mb-3">No photos found</h4>
+                <p class="text-gray-500 mb-8 max-w-md mx-auto">Start building your amazing gallery by uploading your first photo</p>
+                <a href="{{ route('admin.photos.create') }}"
+                   class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-teal-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-plus mr-2"></i>
+                    Upload First Photo
                 </a>
             </div>
         @endif
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
@@ -319,6 +391,65 @@ function deletePhoto(photoId) {
         form.submit();
     }
 }
+
+// Clean empty form parameters before submit
+document.getElementById('filterForm').addEventListener('submit', function(e) {
+    // Remove empty parameters (but keep '0' values!)
+    const inputs = this.querySelectorAll('input[name], select[name]');
+    inputs.forEach(input => {
+        // Only remove if truly empty, not if value is '0'
+        const val = input.value.trim();
+        if (val === '' || val === null || val === undefined) {
+            input.disabled = true; // Disable instead of remove to preserve form structure
+        }
+    });
+    
+    // Debug log
+    console.log('Form data before submit:', new FormData(this));
+});
+
+// Force reload images if coming from update/create
+@if(session('success'))
+    document.addEventListener('DOMContentLoaded', function() {
+        // Force reload all images to bypass cache
+        const images = document.querySelectorAll('img[src*="storage/photos"]');
+        images.forEach(img => {
+            const src = img.src.split('?')[0]; // Remove existing query params
+            img.src = src + '?v=' + Date.now(); // Add fresh timestamp
+        });
+        
+        // Show success message with animation
+        const successMsg = document.querySelector('.alert-success');
+        if (successMsg) {
+            successMsg.classList.add('animate-bounce');
+            setTimeout(() => {
+                successMsg.classList.remove('animate-bounce');
+            }, 1000);
+        }
+    });
+@endif
 </script>
 @endpush
-@endsection
+
+@push('styles')
+<style>
+    /* Coral colors */
+    .text-coral-500 { color: #FF6F61; }
+    .text-coral-700 { color: #e55a4d; }
+    .text-coral-800 { color: #cc4d3f; }
+    .text-coral-900 { color: #b34035; }
+    .bg-coral-100 { background-color: #ffebe9; }
+    .focus\:ring-coral-500:focus { --tw-ring-color: #FF6F61; }
+    .hover\:text-coral-700:hover { color: #e55a4d; }
+    .hover\:text-coral-900:hover { color: #b34035; }
+    
+    /* Sky colors */
+    .bg-sky-100 { background-color: #e8f4ff; }
+    .text-sky-800 { color: #1e5a8e; }
+    .text-sky-900 { color: #164570; }
+    .hover\:text-sky-900:hover { color: #164570; }
+    
+    /* Lemon colors */
+    .bg-lemon-100 { background-color: #fffacd; }
+</style>
+@endpush

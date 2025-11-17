@@ -27,6 +27,12 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password123'),
         ]);
 
+        // Run other seeders
+        $this->call([
+            PageSeeder::class,
+            UserEngagementSeeder::class,
+        ]);
+
         // Create categories
         $categories = [
             [
@@ -103,36 +109,6 @@ class DatabaseSeeder extends Seeder
             Tag::firstOrCreate([
                 'slug' => $tagData['slug']
             ], $tagData);
-        }
-
-        // Create sample pages
-        $pages = [
-            [
-                'title' => 'Tentang Galeri',
-                'slug' => 'tentang-galeri',
-                'content' => '<h2>Selamat Datang di Galeri Sekolah</h2><p>Galeri ini merupakan dokumentasi digital dari berbagai kegiatan dan prestasi sekolah. Kami berkomitmen untuk mengabadikan setiap momen berharga dalam perjalanan pendidikan.</p>',
-                'excerpt' => 'Dokumentasi digital kegiatan dan prestasi sekolah',
-                'is_published' => true,
-                'show_in_menu' => true,
-                'menu_order' => 1,
-                'created_by' => $admin->id,
-            ],
-            [
-                'title' => 'Cara Menggunakan',
-                'slug' => 'cara-menggunakan',
-                'content' => '<h2>Panduan Penggunaan Galeri</h2><p>Berikut adalah panduan untuk menggunakan galeri sekolah:</p><ul><li>Jelajahi kategori untuk menemukan foto berdasarkan jenis kegiatan</li><li>Gunakan fitur pencarian untuk menemukan foto spesifik</li><li>Klik foto untuk melihat detail dan informasi lengkap</li></ul>',
-                'excerpt' => 'Panduan lengkap menggunakan galeri sekolah',
-                'is_published' => true,
-                'show_in_menu' => true,
-                'menu_order' => 2,
-                'created_by' => $admin->id,
-            ],
-        ];
-
-        foreach ($pages as $pageData) {
-            Page::firstOrCreate([
-                'slug' => $pageData['slug']
-            ], $pageData);
         }
 
         // Create sample testimonials

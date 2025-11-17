@@ -11,7 +11,7 @@ class CategoryController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        // Middleware handled by route group
     }
 
     public function index(Request $request)
@@ -78,7 +78,7 @@ class CategoryController extends Controller
             $category->is_active = $request->boolean('is_active', true);
             
             // Set order to be last
-            $category->order = Category::max('order') + 1;
+            $category->sort_order = Category::max('sort_order') + 1;
             
             $category->save();
 
@@ -173,13 +173,13 @@ class CategoryController extends Controller
         $request->validate([
             'categories' => 'required|array',
             'categories.*.id' => 'required|exists:categories,id',
-            'categories.*.order' => 'required|integer|min:1'
+            'categories.*.sort_order' => 'required|integer|min:1'
         ]);
 
         try {
             foreach ($request->categories as $categoryData) {
                 Category::where('id', $categoryData['id'])
-                       ->update(['order' => $categoryData['order']]);
+                       ->update(['sort_order' => $categoryData['sort_order']]);
             }
 
             return response()->json([

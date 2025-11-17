@@ -11,7 +11,7 @@ class PhotoCommentController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        // Middleware handled by route group
     }
 
     public function index(Request $request)

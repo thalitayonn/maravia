@@ -49,4 +49,12 @@ class Category extends Model
     {
         return $this->activePhotos()->count();
     }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }

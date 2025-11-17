@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Storage;
 
 class Photo extends Model
@@ -62,6 +63,29 @@ class Photo extends Model
         return $this->hasMany(PhotoView::class);
     }
 
+    // User engagement relationships
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_favorites')->withTimestamps();
+    }
+
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(PhotoRating::class);
+    }
+
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(UserCollection::class, 'collection_photos', 'photo_id', 'collection_id')
+                    ->withPivot('order')
+                    ->withTimestamps();
+    }
+
+    public function activities(): MorphMany
+    {
+        return $this->morphMany(UserActivity::class, 'activityable');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
@@ -86,12 +110,16 @@ class Photo extends Model
 
     public function getUrlAttribute()
     {
-        return Storage::url($this->path);
+        // Use asset() for public storage
+        return asset('storage/' . $this->path);
     }
 
     public function getThumbnailUrlAttribute()
     {
-        return $this->thumbnail_path ? Storage::url($this->thumbnail_path) : $this->url;
+        if ($this->thumbnail_path) {
+            return asset('storage/' . $this->thumbnail_path);
+        }
+        return $this->url;
     }
 
     public function getFileSizeHumanAttribute()
@@ -109,5 +137,29 @@ class Photo extends Model
     public function incrementViewCount()
     {
         $this->increment('view_count');
+    }
+
+    // Engagement helper methods
+    public function getAverageRatingAttribute(): float
+    {
+        return $this->ratings()->avg('rating') ?? 0;
+    }
+
+    public function getRatingCountAttribute(): int
+    {
+        return $this->ratings()->count();
+    }
+
+    public function getFavoritesCountAttribute(): int
+    {
+        return $this->favoritedBy()->count();
+    }
+
+    public function getEngagementScoreAttribute(): int
+    {
+        return ($this->view_count * 1) + 
+               ($this->download_count * 2) + 
+               ($this->favorites_count * 3) + 
+               ($this->rating_count * 4);
     }
 }

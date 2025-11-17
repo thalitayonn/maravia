@@ -8,6 +8,7 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Auth;
 
 class DownloadController extends Controller
 {
@@ -21,6 +22,16 @@ class DownloadController extends Controller
         // Increment download count
         $photo->increment('download_count');
 
+        // Record user activity if authenticated
+        if (Auth::check()) {
+            Auth::user()->recordActivity('download', $photo);
+            
+            // Update user stats
+            if (Auth::user()->stats) {
+                Auth::user()->stats->increment('total_downloads');
+            }
+        }
+
         $size = $request->get('size', 'original');
         $watermark = $request->get('watermark', 'true') === 'true';
 
@@ -28,7 +39,7 @@ class DownloadController extends Controller
             $manager = new ImageManager(new Driver());
             
             // Get the original image path
-            $imagePath = storage_path('app/public/' . $photo->image_path);
+            $imagePath = storage_path('app/public/' . $photo->path);
             
             if (!file_exists($imagePath)) {
                 abort(404, 'Image file not found');
@@ -82,46 +93,64 @@ class DownloadController extends Controller
         $height = $image->height();
 
         // Create watermark text
-        $schoolName = config('app.name', 'School Gallery');
+        $schoolName = config('app.name', 'Cione Gallery');
         $watermarkText = $schoolName . ' - ' . $photo->title;
         
         // Calculate font size based on image dimensions
-        $fontSize = max(12, min(48, $width / 30));
+        $fontSize = max(16, min(48, $width / 25));
         
-        // Add semi-transparent overlay
-        $image->drawRectangle(0, $height - 60, $width, $height, function ($draw) {
-            $draw->background('rgba(0, 0, 0, 0.7)');
+        // Add semi-transparent overlay at bottom
+        $overlayHeight = 80;
+        $image->drawRectangle(0, $height - $overlayHeight, $width, $height, function ($draw) {
+            $draw->background('rgba(0, 0, 0, 0.8)');
         });
 
         // Add main watermark text
-        $image->text($watermarkText, $width / 2, $height - 35, function ($font) use ($fontSize) {
-            $font->filename(public_path('fonts/arial.ttf')); // You may need to add a font file
+        $image->text($watermarkText, 20, $height - 50, function ($font) use ($fontSize) {
             $font->size($fontSize);
             $font->color('#ffffff');
-            $font->align('center');
-            $font->valign('middle');
+            $font->align('left');
+            $font->valign('top');
         });
 
         // Add smaller copyright text
-        $copyrightText = '© ' . date('Y') . ' ' . config('app.name', 'School Gallery') . ' - All Rights Reserved';
-        $image->text($copyrightText, $width / 2, $height - 15, function ($font) use ($fontSize) {
-            $font->filename(public_path('fonts/arial.ttf'));
-            $font->size($fontSize * 0.6);
+        $copyrightText = ' ' . date('Y') . ' ' . config('app.name', 'Cione Gallery') . ' - All Rights Reserved';
+        $image->text($copyrightText, 20, $height - 25, function ($font) use ($fontSize) {
+            $font->size($fontSize * 0.7);
             $font->color('#cccccc');
-            $font->align('center');
-            $font->valign('middle');
+            $font->align('left');
+            $font->valign('top');
+        });
+
+        // Add website URL
+        $websiteUrl = request()->getSchemeAndHttpHost();
+        $image->text($websiteUrl, $width - 20, $height - 25, function ($font) use ($fontSize) {
+            $font->size($fontSize * 0.7);
+            $font->color('#cccccc');
+            $font->align('right');
+            $font->valign('top');
         });
 
         // Add diagonal watermark for extra protection
         $diagonalText = strtoupper($schoolName);
         $image->text($diagonalText, $width / 2, $height / 2, function ($font) use ($fontSize, $width) {
-            $font->filename(public_path('fonts/arial.ttf'));
-            $font->size($fontSize * 2);
-            $font->color('rgba(255, 255, 255, 0.1)');
+            $font->size($fontSize * 3);
+            $font->color('rgba(255, 255, 255, 0.08)');
             $font->align('center');
             $font->valign('middle');
             $font->angle(45);
         });
+
+        // Add user info if authenticated
+        if (Auth::check()) {
+            $userText = 'Downloaded by: ' . Auth::user()->name;
+            $image->text($userText, $width - 20, $height - 50, function ($font) use ($fontSize) {
+                $font->size($fontSize * 0.6);
+                $font->color('#ffffff');
+                $font->align('right');
+                $font->valign('top');
+            });
+        }
 
         return $image;
     }
@@ -149,7 +178,7 @@ class DownloadController extends Controller
     public function bulkDownload(Request $request)
     {
         $request->validate([
-            'photo_ids' => 'required|array',
+            'photo_ids' => 'required|array|max:50', // Limit bulk downloads
             'photo_ids.*' => 'exists:photos,id',
             'size' => 'in:small,medium,large,original',
             'watermark' => 'boolean'
@@ -163,11 +192,24 @@ class DownloadController extends Controller
             abort(404, 'No valid photos found');
         }
 
+        // Record bulk download activity
+        if (Auth::check()) {
+            Auth::user()->recordActivity('bulk_download', null, [
+                'photo_count' => $photos->count(),
+                'photo_ids' => $request->photo_ids
+            ]);
+            
+            // Update user stats
+            if (Auth::user()->stats) {
+                Auth::user()->stats->increment('total_downloads', $photos->count());
+            }
+        }
+
         $size = $request->get('size', 'medium');
         $watermark = $request->get('watermark', true);
 
         // Create a temporary zip file
-        $zipFileName = 'gallery_photos_' . date('Y-m-d_H-i-s') . '.zip';
+        $zipFileName = 'cione_gallery_' . date('Y-m-d_H-i-s') . '.zip';
         $zipPath = storage_path('app/temp/' . $zipFileName);
 
         // Ensure temp directory exists
@@ -184,7 +226,7 @@ class DownloadController extends Controller
             $manager = new ImageManager(new Driver());
 
             foreach ($photos as $photo) {
-                $imagePath = storage_path('app/public/' . $photo->image_path);
+                $imagePath = storage_path('app/public/' . $photo->path);
                 
                 if (!file_exists($imagePath)) {
                     continue;
@@ -231,5 +273,30 @@ class DownloadController extends Controller
             }
             abort(500, 'Error creating zip file: ' . $e->getMessage());
         }
+    }
+
+    public function getDownloadStats()
+    {
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $user = Auth::user();
+        $userStats = [
+            'total_downloads' => $user->stats->total_downloads ?? 0,
+            'downloads_this_month' => $user->activities()
+                ->where('activity_type', 'download')
+                ->where('created_at', '>=', now()->startOfMonth())
+                ->count(),
+            'downloads_this_week' => $user->activities()
+                ->where('activity_type', 'download')
+                ->where('created_at', '>=', now()->startOfWeek())
+                ->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'stats' => $userStats
+        ]);
     }
 }
