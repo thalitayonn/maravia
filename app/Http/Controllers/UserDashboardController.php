@@ -42,19 +42,12 @@ class UserDashboardController extends Controller
         
         // Get user's recent favorites - dengan fallback ke semua foto jika tidak ada favorites
         $recentFavorites = $user->favorites()
+            ->where('photos.is_active', true)
             ->with(['category', 'tags'])
             ->latest('user_favorites.created_at')
             ->take(6)
             ->get();
         
-        // Jika user belum punya favorites, ambil foto terbaru sebagai contoh
-        if ($recentFavorites->isEmpty()) {
-            $recentFavorites = \App\Models\Photo::active()
-                ->with(['category', 'tags'])
-                ->latest()
-                ->take(6)
-                ->get();
-        }
         
         // Get user's collections
         $collections = $user->collections()

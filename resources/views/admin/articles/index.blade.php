@@ -80,7 +80,7 @@
 
 <!-- Delete Confirm Modal -->
 <div id="deleteModal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+    <div id="modalBackdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
     <div class="relative mx-auto mt-40 w-full max-w-md">
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
             <div class="px-6 py-4 border-b">
@@ -96,8 +96,6 @@
         </div>
     </div>
     <span class="sr-only" aria-hidden="true">Modal</span>
-    <button id="closeBackdrop" class="absolute inset-0 w-full h-full cursor-default"></button>
-    
 </div>
 @push('scripts')
 <script>
@@ -122,7 +120,7 @@
             }
         });
         document.getElementById('btnCancelDelete').addEventListener('click', closeModal);
-        document.getElementById('closeBackdrop').addEventListener('click', closeModal);
+        document.getElementById('modalBackdrop').addEventListener('click', closeModal);
         document.getElementById('btnConfirmDelete').addEventListener('click', function(){
             if(formToSubmit){ formToSubmit.submit(); }
             closeModal();

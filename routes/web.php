@@ -40,9 +40,9 @@ Route::post('/gallery/photo/{photo}/comments', [CommentController::class, 'store
 Route::post('/comments/{comment}/react', [CommentController::class, 'toggleReaction'])->middleware('auth')->name('comments.react');
 Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->middleware('auth')->name('comments.destroy');
 
-// Download routes
-Route::get('/download/photo/{photo}', [DownloadController::class, 'downloadPhoto'])->name('download.photo');
-Route::post('/download/bulk', [DownloadController::class, 'bulkDownload'])->name('download.bulk');
+// User favorite routes (public gallery)
+Route::post('/photos/{photo}/favorite', [GalleryController::class, 'toggleFavorite'])->middleware('auth')->name('photos.favorite.toggle');
+
 
 // Testimonials
 Route::get('/testimonials', [GuestTestimonialController::class, 'index'])->name('testimonials');

@@ -120,7 +120,7 @@ class PhotoController extends Controller
             $photo->category_id = $request->category_id;
             $photo->is_featured = $request->boolean('is_featured');
             $photo->is_active = $request->boolean('is_active', true);
-            $photo->uploaded_by = auth()->id();
+            $photo->uploaded_by = auth('admin')->id() ?? 1; // Fallback to admin ID 1 if not authenticated
 
             // Handle image upload
             if ($request->hasFile('image') && $request->file('image')->isValid()) {

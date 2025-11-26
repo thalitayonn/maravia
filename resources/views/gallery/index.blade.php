@@ -33,7 +33,7 @@
                     
                     <div class="flex flex-col sm:flex-row gap-4">
                         <a href="{{ route('gallery') }}" 
-                           class="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-coral-500 to-pink-500 hover:from-coral-600 hover:to-pink-600 text-white rounded-2xl font-semibold text-lg transition-all duration-300 hover-lift shadow-2xl hover:shadow-coral-500/50 border border-white/20 backdrop-blur-sm">
+                           class="group inline-flex items-center justify-center px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-semibold text-lg transition-all duration-300 hover-lift shadow-2xl border border-white/20 backdrop-blur-sm">
                             <i class="fas fa-images mr-3 group-hover:scale-110 transition-transform"></i>
                             Jelajahi Galeri
                             <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
@@ -65,50 +65,21 @@
                 <!-- Right Image Slider - Futuristic 3D Carousel -->
                 <div class="relative">
                     <!-- Slider Container dengan Glassmorphism -->
-                    <div class="relative rounded-3xl" style="height: 600px; overflow: hidden;">
-                        @if($featuredPhotos->count() > 0)
+                    <div class="relative rounded-3xl" style="height: 520px; overflow: hidden;">
+                        @if($recentPhotos->count() > 0)
                             <!-- Slider Foto dengan Swiper - Futuristic Style -->
                             <div class="swiper hero-swiper h-full rounded-3xl overflow-hidden shadow-2xl border border-white/20 backdrop-blur-sm">
                                 <div class="swiper-wrapper">
-                                    @foreach($featuredPhotos as $photo)
+                                    @foreach($recentPhotos as $photo)
                                         <div class="swiper-slide">
-                                            <div class="relative h-full group">
-                                                <img src="{{ $photo->url }}" 
+                                            <div class="relative h-full">
+                                                <img src="{{ url('/api/photos/' . $photo->id . '/image') }}" 
                                                      alt="{{ $photo->title }}"
-                                                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                     loading="lazy">
-                                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-                                                    <div class="absolute inset-0 border-2 border-white/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                                    <div class="absolute bottom-8 left-8 right-8 text-white transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-                                                        <div class="glass-card bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/30 shadow-2xl hover:bg-white/15 transition-all duration-300">
-                                                            <div class="flex items-center gap-2 mb-3">
-                                                                <span class="w-2 h-2 bg-coral-500 rounded-full animate-pulse"></span>
-                                                                <span class="text-xs font-semibold text-white/80 uppercase tracking-wider">Featured</span>
-                                                            </div>
-                                                            <h3 class="text-3xl font-bold mb-3 drop-shadow-lg">{{ $photo->title }}</h3>
-                                                            <p class="text-white/90 mb-4 line-clamp-2">{{ $photo->description ?? 'Foto menakjubkan dari galeri kami' }}</p>
-                                                            <div class="flex items-center space-x-3 flex-wrap">
-                                                                <span class="glass-card flex items-center text-sm bg-white/15 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 hover:scale-105 transition-transform">
-                                                                    <i class="fas fa-eye mr-2 text-blue-300"></i>{{ $photo->views ?? 0 }}
-                                                                </span>
-                                                                <span class="glass-card flex items-center text-sm bg-white/15 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 hover:scale-105 transition-transform">
-                                                                    <i class="fas fa-heart mr-2 text-red-300"></i>{{ $photo->favorites_count ?? 0 }}
-                                                                </span>
-                                                                <span class="glass-card flex items-center text-sm bg-white/15 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 hover:scale-105 transition-transform">
-                                                                    <i class="fas fa-tag mr-2 text-green-300"></i>{{ $photo->category?->name ?? 'Umum' }}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-blue-500/0 opacity-0 group-hover:opacity-100 group-hover:from-pink-500/20 group-hover:via-purple-500/20 group-hover:to-blue-500/20 transition-all duration-700 rounded-3xl"></div>
-                                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-3xl"></div>
+                                                     class="w-full h-full object-cover rounded-3xl">
                                             </div>
                                         </div>
                                     @endforeach
                                 </div>
-                                <div class="swiper-button-next"><i class="fas fa-chevron-right text-lg"></i></div>
-                                <div class="swiper-button-prev"><i class="fas fa-chevron-left text-lg"></i></div>
                                 <div class="swiper-pagination"></div>
                             </div>
                         @else
@@ -138,9 +109,9 @@
                                                  data-translate-x="{{ $translateX }}"
                                                  data-rotate-y="{{ $rotateY }}"
                                                  style="width: 100%; height: 100%; transform: translateY(-{{ $translateY }}px) translateX({{ $translateX }}px) scale({{ $baseScale }}) rotateY({{ $rotateY }}deg); opacity: {{ $opacity }}; z-index: {{ $zIndex }}; transform-origin: center center;"
-                                                 data-photo-id="{{ $photo->id }}" data-photo-url="{{ $photo->url }}" data-photo-title="{{ addslashes($photo->title) }}" data-photo-category="{{ $photo->category?->name ?? 'Umum' }}" data-photo-views="{{ $photo->view_count ?? 0 }}" data-photo-date="{{ $photo->created_at->format('d M Y') }}" data-photo-description="{{ addslashes($photo->description ?? 'Tidak ada deskripsi') }}" data-photo-href="{{ route('gallery.photo', $photo) }}"
+                                                 data-photo-id="{{ $photo->id }}" data-photo-url="{{ url('/api/photos/' . $photo->id . '/image') }}" data-photo-title="{{ addslashes($photo->title) }}" data-photo-category="{{ $photo->category?->name ?? 'Umum' }}" data-photo-views="{{ $photo->view_count ?? 0 }}" data-photo-date="{{ $photo->created_at->format('d M Y') }}" data-photo-description="{{ addslashes($photo->description ?? 'Tidak ada deskripsi') }}" data-photo-href="{{ route('gallery.photo', $photo) }}"
                                                  >
-                                                <img src="{{ $photo->url }}" alt="{{ $photo->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 rounded-3xl">
+                                                <img src="{{ url('/api/photos/' . $photo->id . '/image') }}" alt="{{ $photo->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 rounded-3xl">
                                                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl">
                                                     <div class="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                                                         <div class="glass-card bg-white/15 backdrop-blur-xl rounded-2xl p-3 border border-white/20 mx-4 mb-4">
@@ -174,11 +145,6 @@
     <section id="featured" class="py-20 relative z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <div class="inline-block mb-4">
-                    <span class="glass-card bg-gradient-to-r from-coral-500/20 to-pink-500/20 backdrop-blur-xl text-coral-600 px-6 py-2 rounded-full text-sm font-semibold border border-coral-500/30">
-                        ⭐ Unggulan
-                    </span>
-                </div>
                 <h2 class="text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-4">
                     Foto Unggulan
                 </h2>
@@ -190,18 +156,12 @@
                 <a href="{{ route('gallery.photo', $photo) }}" 
                    class="group block rounded-3xl overflow-hidden transition-all duration-500 cursor-pointer">
                     <div class="relative aspect-[4/3] overflow-hidden rounded-t-3xl">
-                        <img src="{{ $photo->url }}" 
+                        <img src="{{ url('/api/photos/' . $photo->id . '/image') }}" 
                              alt="{{ $photo->title }}"
                              class="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         
-                        <!-- Badge dengan Glassmorphism -->
-                        <div class="absolute top-4 left-4">
-                            <span class="glass-card bg-gradient-to-r from-lemon-400/90 to-orange-400/90 backdrop-blur-md text-gray-900 px-4 py-2 rounded-full text-xs font-bold flex items-center border border-white/30 shadow-lg">
-                                <i class="fas fa-star mr-2 animate-pulse"></i>
-                                Featured
-                            </span>
-                        </div>
+                        
                         
                         <!-- Stats dengan Glassmorphism -->
                         <div class="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
@@ -220,15 +180,9 @@
             
             <div class="text-center mt-12">
                 <a href="#recent" 
-                   class="inline-flex items-center px-8 py-4 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold transition-all duration-300 hover-lift smooth-scroll">
+                   class="inline-flex items-center px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold transition-all duration-300 hover-lift smooth-scroll border border-white/20">
                     Lihat Foto Terbaru
                     <i class="fas fa-arrow-down ml-3"></i>
-                </a>
-            </div>
-            <!-- CTA: All News -->
-            <div class="mt-10 flex justify-center">
-                <a href="{{ route('news.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white/80 hover:bg-white text-gray-800 rounded-xl shadow border border-white/30 transition">
-                    Lihat Semua Berita <i class="fas fa-newspaper"></i>
                 </a>
             </div>
         </div>
@@ -269,7 +223,7 @@
                     
                     <!-- Background Image -->
                     @if($categoryPhoto)
-                        <img src="{{ $categoryPhoto->url }}" 
+                        <img src="{{ url('/api/photos/' . $categoryPhoto->id . '/image') }}" 
                              alt="{{ $category->name }}"
                              class="absolute inset-0 w-full h-full object-cover group-hover:scale-125 transition-transform duration-700">
                     @endif
@@ -337,10 +291,10 @@
                         <div class="swiper-slide">
                             <div class="group relative">
                                 <a href="javascript:void(0)"
-                                   data-photo-id="{{ $photo->id }}" data-photo-url="{{ $photo->url }}" data-photo-title="{{ addslashes($photo->title) }}" data-photo-category="{{ $photo->category?->name ?? 'Umum' }}" data-photo-views="{{ $photo->view_count ?? 0 }}" data-photo-date="{{ $photo->created_at->format('d M Y') }}" data-photo-description="{{ addslashes($photo->description ?? 'Tidak ada deskripsi') }}"
+                                   data-photo-id="{{ $photo->id }}" data-photo-url="{{ url('/api/photos/' . $photo->id . '/image') }}" data-photo-title="{{ addslashes($photo->title) }}" data-photo-category="{{ $photo->category?->name ?? 'Umum' }}" data-photo-views="{{ $photo->view_count ?? 0 }}" data-photo-date="{{ $photo->created_at->format('d M Y') }}" data-photo-description="{{ addslashes($photo->description ?? 'Tidak ada deskripsi') }}"
                                    class="recent-card block cursor-default">
                                     <div class="media relative aspect-square rounded-2xl overflow-hidden">
-                                        <img src="{{ $photo->url }}" alt="{{ $photo->title }}" class="w-full h-full object-cover">
+                                        <img src="{{ url('/api/photos/' . $photo->id . '/thumbnail') }}" alt="{{ $photo->title }}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='{{ url('/api/photos/' . $photo->id . '/image') }}'">
                                         <!-- top pills -->
                                         <div class="absolute top-3 left-3 right-3 flex items-center justify-between">
                                             <span class="pill-brand text-[11px] font-semibold pointer-events-none">{{ $photo->category?->name ?? 'Umum' }}</span>
@@ -365,7 +319,7 @@
                 </div>
                 <!-- CTA: All Photos -->
                 <div class="mt-8 flex justify-center">
-                    <a href="{{ route('gallery') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white/80 hover:bg-white text-gray-800 rounded-xl shadow border border-white/30 transition">
+                    <a href="{{ route('gallery') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl shadow border border-white/20 transition">
                         Lihat Semua Foto <i class="fas fa-images"></i>
                     </a>
                 </div>
@@ -386,7 +340,7 @@
                     <h2 class="text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-2">Berita</h2>
                     <p class="text-xl text-gray-600">Kabar terbaru dan informasi penting</p>
                 </div>
-                <a href="{{ route('news.index') }}" class="inline-flex items-center gap-2 px-5 py-3 bg-white/80 hover:bg-white text-gray-800 rounded-xl shadow border border-white/30 transition">
+                <a href="{{ route('news.index') }}" class="inline-flex items-center gap-2 px-5 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl shadow border border-white/20 transition">
                     Lihat Semua Berita <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
@@ -439,7 +393,7 @@
                 Ribuan foto menanti untuk kamu eksplorasi. Temukan momen-momen berharga!
             </p>
             <a href="#home" 
-                   class="group inline-flex items-center px-10 py-5 bg-gradient-to-r from-coral-500 to-pink-500 hover:from-coral-600 hover:to-pink-600 text-white rounded-2xl font-bold text-lg transition-all duration-300 hover-lift shadow-2xl hover:shadow-coral-500/50 border border-white/20 smooth-scroll">
+                   class="group inline-flex items-center px-10 py-5 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-bold text-lg transition-all duration-300 hover-lift shadow-2xl border border-white/20 smooth-scroll">
                     <i class="fas fa-arrow-up mr-3 group-hover:-translate-y-1 transition-transform"></i>
                 Kembali ke Atas
             </a>
@@ -1348,10 +1302,7 @@
                         disableOnInteraction: false,
                         pauseOnMouseEnter: false
                     },
-                    navigation: { 
-                        nextEl: '.hero-swiper .swiper-button-next', 
-                        prevEl: '.hero-swiper .swiper-button-prev' 
-                    },
+                    // navigation removed per design request
                     pagination: { 
                         el: '.hero-swiper .swiper-pagination', 
                         clickable: true 
@@ -1493,7 +1444,7 @@
                         window.heroSwiper = new Swiper('.hero-swiper', {
                             loop: true,
                             autoplay: { delay: 4000, disableOnInteraction: false },
-                            navigation: { nextEl: '.hero-swiper .swiper-button-next', prevEl: '.hero-swiper .swiper-button-prev' },
+                            // navigation removed per design request
                             pagination: { el: '.hero-swiper .swiper-pagination', clickable: true },
                             centeredSlides: true,
                             slidesPerView: 1.2,

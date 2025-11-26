@@ -22,7 +22,6 @@
             <div class="lg:col-span-2 space-y-8">
                 
                 <!-- Recent Favorites -->
-                @if($recentFavorites->count() > 0)
                 <div id="favorites-section" class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
                     <!-- Debug Info -->
                     <div class="hidden">
@@ -42,10 +41,12 @@
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        @if($recentFavorites->count() > 0)
                         @foreach($recentFavorites as $photo)
                             <div class="group relative overflow-hidden rounded-xl aspect-square cursor-pointer hover-lift"
                                  onclick="openPhotoModal({{ $photo->id }})">
-                                <img src="{{ $photo->url }}" alt="{{ $photo->title }}"
+                                <img src="{{ route('api.photos.thumbnail', $photo) }}" alt="{{ $photo->title }}"
+                                     onerror="this.onerror=null; this.src='{{ route('api.photos.image', $photo) }}'"
                                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                     <div class="absolute bottom-2 left-2 right-2">
@@ -58,9 +59,16 @@
                                 </div>
                             </div>
                         @endforeach
+                        @else
+                            <div class="col-span-6">
+                                <div class="w-full py-10 text-center text-gray-500">
+                                    <i class="fas fa-heart text-red-400 mr-2"></i>
+                                    <span>Belum ada foto favorit. Mulai like foto di galeri!</span>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
-                @endif
 
                 <!-- Komentar Saya -->
                 <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
@@ -201,7 +209,8 @@
                     @foreach($recommendedPhotos as $photo)
                         <div class="group relative overflow-hidden rounded-xl aspect-square cursor-pointer hover-lift"
                              onclick="openPhotoModal({{ $photo->id }})">
-                            <img src="{{ $photo->thumbnail_url }}" alt="{{ $photo->title }}"
+                            <img src="{{ route('api.photos.thumbnail', $photo) }}" alt="{{ $photo->title }}"
+                                 onerror="this.onerror=null; this.src='{{ route('api.photos.image', $photo) }}'"
                                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                 <div class="absolute bottom-2 left-2 right-2">

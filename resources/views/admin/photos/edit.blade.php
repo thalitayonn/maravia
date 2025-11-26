@@ -31,7 +31,7 @@
         </div>
         <div class="flex justify-center">
             <div class="relative inline-block">
-                <img src="{{ $photo->url }}" 
+                <img src="{{ route('api.photos.image', $photo) }}?v={{ $photo->updated_at->timestamp }}" 
                      alt="{{ $photo->title }}" 
                      class="max-w-md rounded-lg shadow-xl border-4 border-white"
                      onerror="this.onerror=null; this.src='{{ $photo->thumbnail_url }}';">

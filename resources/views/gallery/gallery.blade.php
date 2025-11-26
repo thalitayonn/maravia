@@ -27,7 +27,7 @@
                         <input type="text" 
                                name="search" 
                                id="smartSearch"
-                               placeholder="Cari foto berdasarkan nama acara, tahun, atau kategori..." 
+                               placeholder="Cari foto berdasarkan nama..." 
                                class="w-full px-6 py-4 pl-14 pr-20 text-lg border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent shadow-lg"
                                value="{{ request('search') }}"
                                autocomplete="off">
@@ -84,7 +84,7 @@
                 @foreach($photos as $photo)
                     <div class="photo-item group" data-photo-id="{{ $photo->id }}">
                         <div class="relative overflow-hidden rounded-2xl bg-white shadow-lg hover-lift"
-                             data-like-url="{{ route('user.photos.favorite', $photo) }}"
+                             data-like-url="{{ route('photos.favorite.toggle', $photo) }}"
                              data-detail-url="{{ route('gallery.photo', $photo) }}"
                              data-download-url="{{ route('download.photo', $photo) }}?size=original">
                             <!-- Photo Image -->

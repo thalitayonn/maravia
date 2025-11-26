@@ -30,7 +30,7 @@
         <!-- Photo Preview - Large -->
         <div class="lg:col-span-2">
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                <img src="{{ url('/api/photos/' . $photo->id . '/image') }}" 
+                <img src="{{ url('/api/photos/' . $photo->id . '/image') }}?v={{ $photo->updated_at->timestamp }}" 
                      alt="{{ $photo->title }}" 
                      class="w-full h-auto"
                      onerror="this.onerror=null; this.src='{{ $photo->url }}'; console.log('Admin view API failed for photo:', {{ $photo->id }});"

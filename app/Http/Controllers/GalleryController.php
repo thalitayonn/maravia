@@ -64,12 +64,18 @@ class GalleryController extends Controller
             $query->byTag($request->tag);
         }
         
-        // Search
+        // Search (title only)
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('category', function ($cq) use ($search) {
+                      $cq->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('tags', function ($tq) use ($search) {
+                      $tq->where('name', 'like', "%{$search}%");
+                  });
             });
         }
         
@@ -181,11 +187,11 @@ class GalleryController extends Controller
                 ->where(function ($q) use ($query) {
                     $q->where('title', 'like', "%{$query}%")
                       ->orWhere('description', 'like', "%{$query}%")
-                      ->orWhereHas('tags', function ($tagQuery) use ($query) {
-                          $tagQuery->where('name', 'like', "%{$query}%");
+                      ->orWhereHas('category', function ($cq) use ($query) {
+                          $cq->where('name', 'like', "%{$query}%");
                       })
-                      ->orWhereHas('category', function ($catQuery) use ($query) {
-                          $catQuery->where('name', 'like', "%{$query}%");
+                      ->orWhereHas('tags', function ($tq) use ($query) {
+                          $tq->where('name', 'like', "%{$query}%");
                       });
                 })
                 ->latest()
@@ -228,7 +234,13 @@ class GalleryController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('category', function ($cq) use ($search) {
+                      $cq->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('tags', function ($tq) use ($search) {
+                      $tq->where('name', 'like', "%{$search}%");
+                  });
             });
         }
         
@@ -306,7 +318,41 @@ class GalleryController extends Controller
                 'path' => $photo->path,
                 'full_path' => $filePath
             ]);
-            abort(404, 'Image file not found');
+
+            // Fallback to static placeholder if available
+            $placeholder = public_path('images/placeholder.jpg');
+            if (file_exists($placeholder)) {
+                return response()->file($placeholder, [
+                    'Content-Type' => 'image/jpeg',
+                    'Content-Disposition' => 'inline',
+                    'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+                    'Pragma' => 'no-cache',
+                    'Expires' => '0',
+                    'Last-Modified' => gmdate('D, d M Y H:i:s', filemtime($placeholder)) . ' GMT'
+                ]);
+            }
+
+            // Last resort: generate simple SVG placeholder so it's visible
+            $safeTitle = htmlspecialchars($photo->title ?? config('app.name', 'Maravia'), ENT_QUOTES, 'UTF-8');
+            $svg = '<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">'
+                 . '<defs>'
+                 . '<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
+                 . '<stop offset="0%" stop-color="#fdf2f8"/>'
+                 . '<stop offset="100%" stop-color="#e0f2fe"/>'
+                 . '</linearGradient>'
+                 . '</defs>'
+                 . '<rect width="100%" height="100%" fill="url(#g)"/>'
+                 . '<text x="50%" y="50%" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#334155">'
+                 . $safeTitle
+                 . '</text>'
+                 . '<text x="50%" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#64748b">Image unavailable</text>'
+                 . '</svg>';
+            return response($svg, 200, [
+                'Content-Type' => 'image/svg+xml',
+                'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]);
         }
 
         $mimeType = mime_content_type($filePath);
@@ -314,8 +360,10 @@ class GalleryController extends Controller
         return response()->file($filePath, [
             'Content-Type' => $mimeType,
             'Content-Disposition' => 'inline',
-            'Cache-Control' => 'public, max-age=86400', // 24 hours
-            'Expires' => gmdate('D, d M Y H:i:s', time() + 86400) . ' GMT',
+            // Disable aggressive caching so updated photos show immediately
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
             'Last-Modified' => gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT'
         ]);
     }
@@ -336,8 +384,10 @@ class GalleryController extends Controller
                 return response()->file($thumbnailPath, [
                     'Content-Type' => $mimeType,
                     'Content-Disposition' => 'inline',
-                    'Cache-Control' => 'public, max-age=86400',
-                    'Expires' => gmdate('D, d M Y H:i:s', time() + 86400) . ' GMT',
+                    // Disable aggressive caching for thumbnails as well
+                    'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+                    'Pragma' => 'no-cache',
+                    'Expires' => '0',
                     'Last-Modified' => gmdate('D, d M Y H:i:s', filemtime($thumbnailPath)) . ' GMT'
                 ]);
             }
@@ -345,6 +395,36 @@ class GalleryController extends Controller
 
         // Fallback to original image
         return $this->serveImage($photo);
+    }
+
+    public function toggleFavorite(Photo $photo)
+    {
+        if (!$photo->is_active) {
+            return response()->json(['success' => false, 'message' => 'Photo not found'], 404);
+        }
+
+        if (!auth()->check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $userId = auth()->id();
+
+        $already = $photo->favoritedBy()->where('users.id', $userId)->exists();
+        if ($already) {
+            $photo->favoritedBy()->detach($userId);
+            $favorited = false;
+        } else {
+            $photo->favoritedBy()->attach($userId);
+            $favorited = true;
+        }
+
+        $count = $photo->favoritedBy()->count();
+
+        return response()->json([
+            'success' => true,
+            'favorited' => $favorited,
+            'favorites_count' => $count,
+        ]);
     }
 
     // Public News Listing

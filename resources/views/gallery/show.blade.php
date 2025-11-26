@@ -92,7 +92,7 @@
                 return;
             @endif
             try {
-                const res = await fetch('{{ route('user.photos.favorite', $photo) }}', {
+                const res = await fetch('{{ route('photos.favorite.toggle', $photo) }}', {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: {

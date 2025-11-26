@@ -216,7 +216,7 @@
                 @foreach($photos as $photo)
                     <div class="group relative bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
                         <div class="aspect-square overflow-hidden">
-                            <img src="{{ $photo->url }}?v={{ $photo->updated_at->timestamp }}"
+                            <img src="{{ route('api.photos.thumbnail', $photo) }}?v={{ $photo->updated_at->timestamp }}"
                                  alt="{{ $photo->title }}"
                                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                         </div>
