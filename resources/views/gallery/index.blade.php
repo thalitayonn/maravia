@@ -347,6 +347,12 @@
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach($recentArticles->take(6) as $article)
                 <article class="group rounded-2xl overflow-hidden border border-white/20 bg-white/80 backdrop-blur-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                    <div class="relative w-full overflow-hidden bg-gray-100 flex items-center justify-center" data-article-cover-wrapper>
+                        <img src="{{ url('/api/articles/'.$article->id.'/cover') }}"
+                             alt="{{ $article->title }}"
+                             class="w-full object-cover h-40 sm:h-44 md:h-48"
+                             onerror="this.onerror=null; this.closest('[data-article-cover-wrapper]').classList.add('hidden');">
+                    </div>
                     <div class="block p-5">
                         <div class="flex items-center justify-between text-xs text-gray-600 mb-3">
                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 border text-gray-700"><i class="fas fa-folder"></i> {{ $article->category?->name ?? 'Umum' }}</span>
@@ -363,7 +369,8 @@
                                     data-category="{{ $article->category?->name ?? 'Umum' }}"
                                     data-date="{{ $article->created_at?->diffForHumans() }}"
                                     data-excerpt="{{ addslashes($article->excerpt ?? '') }}"
-                                    data-content="{{ addslashes($article->content ?? '') }}">
+                                    data-content="{{ addslashes($article->content ?? '') }}"
+                                    data-cover="{{ url('/api/articles/'.$article->id.'/cover') }}">
                                 Baca selengkapnya <i class="fas fa-arrow-right"></i>
                             </button>
                         </div>
@@ -491,7 +498,7 @@
     </div>
 </div>
 
-<!-- News Modal (text-only) -->
+<!-- News Modal with cover image -->
 <div id="newsModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000] hidden opacity-0 transition-opacity duration-300">
     <div class="absolute inset-0 flex items-center justify-center p-4">
         <div class="max-w-3xl w-full bg-white rounded-[16px] overflow-hidden shadow-2xl border border-gray-200 transform scale-95 transition-transform duration-300" id="newsModalCard">
@@ -499,6 +506,9 @@
                 <button type="button" data-close-news class="absolute top-3 right-3 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center shadow">
                     <i class="fas fa-times"></i>
                 </button>
+                <div id="newsCoverWrapper" class="mb-4 rounded-2xl overflow-hidden bg-gray-100 max-h-[60vh] hidden">
+                    <img id="newsCover" src="" alt="" class="w-full object-cover h-40 sm:h-44 md:h-48">
+                </div>
                 <div class="flex items-start justify-between mb-3 pr-10">
                     <div>
                         <h3 id="newsTitle" class="text-[22px] font-extrabold text-gray-900 mb-1"></h3>
@@ -524,11 +534,23 @@
             function openNewsModal(data){
                 const modal = document.getElementById('newsModal');
                 const card = document.getElementById('newsModalCard');
+                const coverWrapper = document.getElementById('newsCoverWrapper');
+                const coverImg = document.getElementById('newsCover');
                 document.getElementById('newsTitle').textContent = data.title || '';
                 document.getElementById('newsCategory').textContent = data.category || 'Umum';
                 document.getElementById('newsDate').innerHTML = '<i class="fas fa-clock"></i> ' + (data.date || '');
                 document.getElementById('newsExcerpt').textContent = data.excerpt || '';
                 document.getElementById('newsContent').innerHTML = data.content || '';
+
+                if (data.cover){
+                    coverImg.src = data.cover;
+                    coverImg.alt = data.title || '';
+                    coverWrapper.classList.remove('hidden');
+                } else {
+                    coverWrapper.classList.add('hidden');
+                    coverImg.src = '';
+                }
+
                 modal.classList.remove('hidden');
                 setTimeout(()=>{ modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
                 document.body.style.overflow = 'hidden';
@@ -549,7 +571,8 @@
                         category: btn.dataset.category,
                         date: btn.dataset.date,
                         excerpt: btn.dataset.excerpt,
-                        content: btn.dataset.content
+                        content: btn.dataset.content,
+                        cover: btn.dataset.cover
                     });
                     return;
                 }

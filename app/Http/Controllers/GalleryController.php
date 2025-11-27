@@ -397,6 +397,30 @@ class GalleryController extends Controller
         return $this->serveImage($photo);
     }
 
+    public function serveArticleCover(Article $article)
+    {
+        if (!$article->cover_image) {
+            abort(404, 'Cover not found');
+        }
+
+        $filePath = storage_path('app/public/' . $article->cover_image);
+
+        if (!file_exists($filePath)) {
+            abort(404, 'Cover file not found');
+        }
+
+        $mimeType = mime_content_type($filePath);
+
+        return response()->file($filePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+            'Last-Modified' => gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT',
+        ]);
+    }
+
     public function toggleFavorite(Photo $photo)
     {
         if (!$photo->is_active) {

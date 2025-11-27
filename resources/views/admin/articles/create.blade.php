@@ -20,7 +20,7 @@
       </div>
     @endif
 
-    <form action="{{ route('admin.articles.store') }}" method="post" class="modern-card p-6 space-y-5">
+    <form action="{{ route('admin.articles.store') }}" method="post" enctype="multipart/form-data" class="modern-card p-6 space-y-5">
       @csrf
 
       <div>
@@ -37,6 +37,15 @@
         <label class="block text-sm font-medium mb-1">Konten</label>
         <input id="content" type="hidden" name="content" value="{{ old('content') }}">
         <trix-editor input="content" placeholder="Tulis konten artikel..." class="trix-content bg-white border rounded-lg focus:outline-none focus:ring-2" style="--tw-ring-color: var(--color-primary-600); min-height: 220px;"></trix-editor>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Cover Image (opsional)</label>
+        <input type="file" name="cover" accept="image/*" class="w-full border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2" style="--tw-ring-color: var(--color-primary-600);">
+        <p class="mt-1 text-xs text-gray-500">Format JPG/PNG/WEBP, ukuran maks 10MB.</p>
+        @error('cover')
+          <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
       </div>
 
       <div class="grid grid-cols-2 gap-4">

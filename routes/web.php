@@ -303,6 +303,7 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/photos/{photo}', [GalleryController::class, 'apiShow'])->name('photos.show');
     Route::get('/photos/{photo}/image', [GalleryController::class, 'serveImage'])->name('photos.image');
     Route::get('/photos/{photo}/thumbnail', [GalleryController::class, 'serveThumbnail'])->name('photos.thumbnail');
+    Route::get('/articles/{article}/cover', [GalleryController::class, 'serveArticleCover'])->name('articles.cover');
 });
 
 // Test route untuk foto langsung

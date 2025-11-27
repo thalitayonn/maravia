@@ -40,6 +40,27 @@
         <trix-editor input="content" class="trix-content bg-white border rounded-lg"></trix-editor>
       </div>
 
+      @if($article->cover_image)
+      <div>
+        <label class="block text-sm font-medium mb-1">Cover Saat Ini</label>
+        <div class="rounded-lg overflow-hidden border bg-gray-50 mb-2">
+          <img src="{{ url('/api/articles/'.$article->id.'/cover') }}" alt="{{ $article->title }}" class="w-full max-h-64 object-cover">
+        </div>
+        <p class="text-xs text-gray-500">Cover di atas adalah gambar yang sedang digunakan untuk artikel ini.</p>
+      </div>
+      @endif
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Upload Cover Baru</label>
+        <div class="rounded-lg border border-dashed bg-gray-50 px-3 py-3 flex items-center justify-between gap-3">
+          <input type="file" name="cover" accept="image/*" class="w-full text-sm focus:outline-none">
+          <span class="text-[11px] text-gray-500 whitespace-nowrap">JPG/PNG, maks 10MB</span>
+        </div>
+        @error('cover')
+          <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+      </div>
+
       <div class="grid grid-cols-2 gap-4">
         <label class="inline-flex items-center gap-2"><input type="checkbox" name="is_published" value="1" {{ $article->is_published ? 'checked' : '' }}> <span>Published</span></label>
         <div>

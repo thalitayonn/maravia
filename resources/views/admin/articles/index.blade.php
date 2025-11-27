@@ -27,6 +27,7 @@
         <table class="min-w-full">
             <thead>
                 <tr class="text-xs uppercase text-gray-500">
+                    <th class="px-5 py-3 text-left">Cover</th>
                     <th class="px-5 py-3 text-left">Judul</th>
                     <th class="px-5 py-3 text-left">Publish</th>
                     <th class="px-5 py-3 text-right">Aksi</th>
@@ -35,6 +36,18 @@
             <tbody class="divide-y divide-gray-100">
             @forelse($articles as $a)
                 <tr class="hover:bg-gray-50">
+                    <td class="px-5 py-4">
+                        <div class="w-16 h-12 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                            @if($a->cover_image)
+                                <img src="{{ url('/api/articles/'.$a->id.'/cover') }}"
+                                     alt="Cover {{ $a->title }}"
+                                     class="w-full h-full object-cover"
+                                     onerror="this.onerror=null; this.src='{{ asset('storage/'.$a->cover_image) }}';">
+                            @else
+                                <span class="text-[10px] text-gray-400">No cover</span>
+                            @endif
+                        </div>
+                    </td>
                     <td class="px-5 py-4">
                         <div class="font-semibold text-gray-900">{{ $a->title }}</div>
                         <div class="text-xs text-gray-500 truncate max-w-xl">{{ $a->excerpt }}</div>

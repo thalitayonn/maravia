@@ -19,6 +19,12 @@
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach($articles as $article)
                 <article class="group rounded-2xl overflow-hidden border border-white/20 bg-white/80 backdrop-blur-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                    <div class="relative w-full overflow-hidden bg-gray-100 flex items-center justify-center" data-article-cover-wrapper>
+                        <img src="{{ url('/api/articles/'.$article->id.'/cover') }}"
+                             alt="{{ $article->title }}"
+                             class="w-full object-cover h-40 sm:h-44 md:h-48"
+                             onerror="this.onerror=null; this.closest('[data-article-cover-wrapper]').classList.add('hidden');">
+                    </div>
                     <div class="p-5">
                         <div class="flex items-center justify-between text-xs text-gray-600 mb-3">
                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 border text-gray-700"><i class="fas fa-folder"></i> {{ $article->category->name ?? 'Umum' }}</span>
@@ -36,7 +42,8 @@
                                     data-category="{{ $article->category->name ?? 'Umum' }}"
                                     data-date="{{ $article->created_at?->diffForHumans() }}"
                                     data-excerpt="{{ addslashes($article->excerpt ?? '') }}"
-                                    data-content="{{ addslashes($article->content ?? '') }}">
+                                    data-content="{{ addslashes($article->content ?? '') }}"
+                                    data-cover="{{ url('/api/articles/'.$article->id.'/cover') }}">
                                 Baca selengkapnya <i class="fas fa-arrow-right"></i>
                             </button>
                         </div>
@@ -56,7 +63,10 @@
     <div id="newsModal" class="fixed inset-0 bg-black/30 backdrop-blur-md z-[1000] hidden opacity-0 transition-opacity duration-300">
         <div class="absolute inset-0 flex items-center justify-center p-4">
             <div class="max-w-3xl w-full bg-white/90 backdrop-blur-xl rounded-[20px] overflow-hidden shadow-2xl border border-white/60 transform scale-95 transition-transform duration-300" id="newsModalCard">
-                <div class="p-6">
+                <div class="p-6 relative max-h-[80vh] flex flex-col">
+                    <div id="newsCoverWrapper" class="mb-4 rounded-2xl overflow-hidden bg-gray-100 max-h-[70vh] hidden">
+                        <img id="newsCover" src="" alt="" class="w-full object-cover h-40 sm:h-44 md:h-48">
+                    </div>
                     <div class="flex items-start justify-between mb-3">
                         <div>
                             <h3 id="newsTitle" class="text-[22px] font-extrabold text-gray-900 mb-1"></h3>
@@ -67,9 +77,11 @@
                         </div>
                     </div>
                     <div class="h-px bg-gray-200/70 mb-4"></div>
-                    <p id="newsExcerpt" class="text-gray-700 mb-4"></p>
-                    <div id="newsContent" class="prose max-w-none"></div>
-                    <div class="mt-6 flex justify-end">
+                    <div class="overflow-y-auto pr-1" style="scrollbar-gutter: stable;">
+                        <p id="newsExcerpt" class="text-gray-700 mb-4"></p>
+                        <div id="newsContent" class="prose max-w-none"></div>
+                    </div>
+                    <div class="mt-6 flex justify-end shrink-0">
                         <button type="button" data-close-news class="px-4 py-2 rounded-full bg-primary-600 text-white hover:bg-primary-700 shadow-sm">Tutup</button>
                     </div>
                 </div>
@@ -82,11 +94,22 @@
             function openNewsModal(data){
                 const modal = document.getElementById('newsModal');
                 const card = document.getElementById('newsModalCard');
+                const coverWrapper = document.getElementById('newsCoverWrapper');
+                const coverImg = document.getElementById('newsCover');
                 document.getElementById('newsTitle').textContent = data.title || '';
                 document.getElementById('newsCategory').textContent = data.category || 'Umum';
                 document.getElementById('newsDate').innerHTML = '<i class="fas fa-clock"></i> ' + (data.date || '');
                 document.getElementById('newsExcerpt').textContent = data.excerpt || '';
                 document.getElementById('newsContent').innerHTML = data.content || '';
+
+                if (data.cover){
+                    coverImg.src = data.cover;
+                    coverImg.alt = data.title || '';
+                    coverWrapper.classList.remove('hidden');
+                } else {
+                    coverWrapper.classList.add('hidden');
+                    coverImg.src = '';
+                }
                 modal.classList.remove('hidden');
                 setTimeout(()=>{ modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
                 document.body.style.overflow = 'hidden';
@@ -107,7 +130,8 @@
                         category: btn.dataset.category,
                         date: btn.dataset.date,
                         excerpt: btn.dataset.excerpt,
-                        content: btn.dataset.content
+                        content: btn.dataset.content,
+                        cover: btn.dataset.cover
                     });
                 }
                 const modal = document.getElementById('newsModal');

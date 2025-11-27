@@ -17,8 +17,11 @@
 
             @php $cover = $article->cover_image ?? $article->thumbnail ?? null; @endphp
             @if($cover)
-                <div class="rounded-2xl overflow-hidden mb-8 shadow">
-                    <img src="{{ Str::startsWith($cover, ['http://','https://']) ? $cover : asset('storage/'.$cover) }}" alt="{{ $article->title }}" class="w-full h-80 object-cover">
+                <div class="rounded-2xl overflow-hidden mb-8 shadow bg-gray-100 max-h-[60vh]">
+                    <img src="{{ url('/api/articles/'.$article->id.'/cover') }}"
+                         alt="{{ $article->title }}"
+                         class="w-full object-cover h-40 sm:h-44 md:h-48"
+                         onerror="this.onerror=null; this.src='{{ asset('storage/'.$cover) }}';">
                 </div>
             @endif
 
@@ -28,6 +31,11 @@
 
             <div class="prose max-w-none">
                 {!! $article->content !!}
+            </div>
+            <div class="mt-8 flex justify-end">
+                <a href="{{ route('news.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white" style="background:#FF6F61;">
+                    Tutup
+                </a>
             </div>
         </div>
     </section>

@@ -43,9 +43,10 @@
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 @foreach($photos as $photo)
                     <a href="{{ route('gallery.photo', $photo) }}" class="group relative overflow-hidden rounded-xl aspect-square hover-lift">
-                        <img src="{{ $photo->url }}" 
+                        <img src="{{ url('/api/photos/' . $photo->id . '/thumbnail') }}" 
                              alt="{{ $photo->title }}"
-                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                             onerror="this.onerror=null; this.src='{{ url('/api/photos/' . $photo->id . '/image') }}';">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <div class="absolute bottom-4 left-4 right-4">
                                 <h3 class="text-white font-semibold text-lg mb-1">{{ $photo->title }}</h3>
